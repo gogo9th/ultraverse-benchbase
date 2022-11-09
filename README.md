@@ -17,7 +17,7 @@ sudo mysql
 
 ```bash
 $ sudo apt install openjdk-17-jdk maven  # must install Java v17 or higher
-$ cd mariadb-server/benchbase
+$ cd ultraverse-benchbase
 $ ./make-mariadb # 컴파일. Java 소스코드를 수정할 때마다 실행해주어야 함.
 
 ## BenchBase 실행
