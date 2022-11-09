@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#set -x
+
+if [ $# -ne 3 ] && [ $# -ne 4 ] ; then
+	echo "Usage: $0 <epinions|resourcestresser|tatp|seats|tpcc> <mariadb|statedb> <querycount in millions> (load|create|execute|prepare)"
+	exit
+fi
+
+sudo rm -f /var/log/mysql/mylog
+sleep 1
+echo "set global general_log = 0; set global general_log = 1; set global general_log_file = '/var/log/mysql/mylog'; CREATE DATABASE IF NOT EXISTS benchbase;" | mysql -uadmin -ppassword
+
+cd target/benchbase-mariadb
+
+START_TIME=$SECONDS
+
+if [ "$2" == 'statedb1' ]; then
+	statedb='-statedb1'
+elif [ "$2" == 'statedb2' ]; then
+	statedb='-statedb2'
+elif [ "$2" == 'mariadb' ]; then
+	statedb=''
+else
+	echo "mariadb|statedb1|statedb2 should be chosen"
+	echo "Usage: $0 <epinions|resourcestresser|tatp|seats|tpcc> <mariadb|statedb1|statedb2> <1m|10m|100m|1b, querycount in millions> (load|create|execute|prepare)"
+	exit
+fi
+
+
+if [ $# -eq 3 ]; then
+	java -jar benchbase.jar -b $1 -d /dev/null  -c config/mariadb/$1_$2_$3.xml --create=true
+	ELAPSED_TIME=$(($SECONDS - $START_TIME))
+	echo "$1 $2 $3 'create' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
+
+	START_TIME=$SECONDS
+	java -jar benchbase.jar -b $1 -d /dev/null -c config/mariadb/$1_$2_$3.xml --load=true
+	ELAPSED_TIME=$(($SECONDS - $START_TIME))
+	echo "$1 $2 $3 'load' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
+
+	START_TIME=$SECONDS
+	java -jar benchbase.jar $statedb -b $1 -d /dev/null -c config/mariadb/$1_$2_$3.xml --execute=true
+	ELAPSED_TIME=$(($SECONDS - $START_TIME))
+	echo "$1 $2 $3 'execute' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
+
+elif [ "$4" == "prepare" ]; then
+	java -jar benchbase.jar -b $1 -d /dev/null -c config/mariadb/$1_$2_$3.xml --create=true --load=true
+	ELAPSED_TIME=$(($SECONDS - $START_TIME))
+	echo "$1 $2 $3 '$4' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
+else
+	java -jar benchbase.jar $statedb  -b $1 -c config/mariadb/$1_$2_$3.xml --$4=true
+	ELAPSED_TIME=$(($SECONDS - $START_TIME))
+	echo "$1 $2 $3 '$4' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
+fi
+
+
+# All databases size
+# SELECT table_schema, ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS "Size (MB)"
+# FROM information_schema.TABLES
+# GROUP BY table_schema;
+
+# All tables size
+# SELECT table_schema, table_name, round(((data_length + index_length) / 1024 / 1024), 2) `Size in MB`
+# FROM information_schema.TABLES
+# ORDER BY (data_length + index_length) DESC;

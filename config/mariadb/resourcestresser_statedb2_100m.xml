@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<parameters>
+
+    <!-- Connection details -->
+    <type>MARIADB</type>
+    <driver>org.mariadb.jdbc.Driver</driver>
+    <url>jdbc:mariadb://localhost:3306/benchbase?useServerPrepStmts&amp;allowPublicKeyRetrieval=true&amp;useSSL=false</url>
+    <username>admin</username>
+    <password>password</password>
+    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <batchsize>128</batchsize>
+    <querycount>16666666</querycount>
+
+    <!-- Scalefactor in ResourceStresser scales by *100 the number of employees -->
+    <scalefactor>100</scalefactor>
+
+    <!-- The workload -->
+    <terminals>1</terminals>
+    <works>
+        <work>
+            <time>2000000000</time>
+            <rate>100000000</rate>
+            <weights>0,0,16.66,0,0,0</weights>
+        </work>
+    </works>
+
+    <!-- R/S Procedures declaration -->
+    <transactiontypes>
+        <transactiontype>
+            <name>CPU1</name>
+        </transactiontype>
+        <transactiontype>
+            <name>CPU2</name>
+        </transactiontype>
+        <transactiontype>
+            <name>IO1</name>
+        </transactiontype>
+        <transactiontype>
+            <name>IO2</name>
+        </transactiontype>
+        <transactiontype>
+            <name>Contention1</name>
+        </transactiontype>
+        <transactiontype>
+            <name>Contention2</name>
+        </transactiontype>
+    </transactiontypes>
+
+</parameters>

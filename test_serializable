@@ -1,0 +1,58 @@
+#!/bin/bash
+
+
+queries=100000
+
+if [ "$1" == "single"  ]; then
+	db="testbase_single"
+elif [ "$1" == "multi"  ]; then
+	db="testbase_multi"
+else
+	echo "Usage: $0 <single|multi>"
+	exit
+fi
+
+echo "create database if not exists $db; use $db; drop table if exists t1; create table t1 (id int, data varchar(10), primary key (id));" | mysql -uadmin -ppassword
+
+echo "use $db; drop table if exists t2; create table t2 (id int, data varchar(10), primary key (id));" | mysql -uadmin -ppassword
+
+
+
+
+
+filename="${db}_script"
+count=0
+rm -f $filename
+touch $filename
+
+echo "use $db;" >> $filename
+echo "SET SESSION TRANSACTION ISOLATION LEVEL serializable;" >> $filename
+
+
+for (( i = 1; i <= 10000; i = i + 2 )); do
+	echo "insert into t1 (id, data) values ($i, 'hello');" >> $filename
+	if [ "$1" == "multi" ]; then
+		echo "insert into t2 (id, data) values ($i, 'hello');" >> $filename
+	fi
+done
+
+for (( i = 2; i <= $queries; i = i + 2 )); do
+	val="$RANDOM"
+	val2="$SECONDS 1"
+	echo "update t1 set data = '$val' where id / 2 = 0;" >> $filename
+	if [ "$1" == "single" ]; then
+		echo "update t1 set data = '$val2' where id / 2 = 0;" >> $filename
+	else
+		echo "update t2 set data = '$val2' where id / 2 = 0;" >> $filename
+	fi
+	count=$((count + 1))
+	if [ $count -eq 100000 ]; then
+		count=0
+		echo "$i / $queries queries created..."
+	fi
+done
+
+echo "Start $1 experiment"
+START_TIME=$SECONDS
+mysql -uroot -p123456 < $filename
+echo "Done ($(($SECONDS - $START_TIME)) seconds)"

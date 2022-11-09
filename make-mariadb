@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+rm target -rf
+./mvnw clean package -P mariadb -Dmaven.test.skip=true
+cd target
+unzip benchbase-mariadb.zip
