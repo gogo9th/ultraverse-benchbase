@@ -41,27 +41,34 @@ public class DeleteCallForwarding extends Procedure {
     public long run(Connection conn, String sub_nbr, byte sf_type, byte start_time) throws SQLException {
         //long s_id = -1;
 
-        try (PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber)) {
+        try {
+            PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber);
             stmt.setString(1, sub_nbr);
-            try (ResultSet results = stmt.executeQuery()) {
-                if (results.next()) {
-                    //s_id = results.getLong(1);
-                }
-            }
+            stmt.executeQuery();
+
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         int rows_updated = -1;
 
-        try (PreparedStatement stmt = this.getPreparedStatement(conn, updateCallForwarding)) {
+        try {
+            PreparedStatement stmt = this.getPreparedStatement(conn, updateCallForwarding);
             //stmt.setLong(1, s_id);
             stmt.setByte(1, sf_type);
             stmt.setByte(2, start_time);
             rows_updated = stmt.executeUpdate();
+
+            if (rows_updated == 0) {
+                throw new UserAbortException("Failed to delete a row in " + TATPConstants.TABLENAME_CALL_FORWARDING);
+            }
+
+            stmt.close();
+        } catch (Exception e) {
+            System.err.printf("WARN: %s\n", e.getMessage());
         }
 
-        if (rows_updated == 0) {
-            throw new UserAbortException("Failed to delete a row in " + TATPConstants.TABLENAME_CALL_FORWARDING);
-        }
         return (rows_updated);
     }
 }

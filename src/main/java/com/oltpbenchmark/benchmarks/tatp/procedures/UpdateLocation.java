@@ -40,18 +40,20 @@ public class UpdateLocation extends Procedure {
     public long run(Connection conn, int location, String sub_nbr) throws SQLException {
         try (PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber)) {
             stmt.setString(1, sub_nbr);
-            try (ResultSet results = stmt.executeQuery()) {
-
-                if (results.next()) {
-                    //long s_id = results.getLong(1);
-                    try (PreparedStatement stmt2 = this.getPreparedStatement(conn, updateSubscriber)) {
-                        stmt2.setInt(1, location);
-                        //stmt2.setLong(2, s_id);
-                        return stmt2.executeUpdate();
-                    }
-                }
-            }
+            stmt.executeQuery();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        try {
+            PreparedStatement stmt2 = this.getPreparedStatement(conn, updateSubscriber);
+            stmt2.setInt(1, location);
+            //stmt2.setLong(2, s_id);
+            return stmt2.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return 0;
     }
 }

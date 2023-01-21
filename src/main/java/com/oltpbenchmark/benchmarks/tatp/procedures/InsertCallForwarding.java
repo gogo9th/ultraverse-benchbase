@@ -38,46 +38,53 @@ public class InsertCallForwarding extends Procedure {
     );
 
     public final SQLStmt insertCallForwarding = new SQLStmt(
-            "INSERT INTO " + TATPConstants.TABLENAME_CALL_FORWARDING + " VALUES ($s_id, ?, ?, ?, ?)"
+            "INSERT INTO " + TATPConstants.TABLENAME_CALL_FORWARDING + " VALUES (@s_id, ?, ?, ?, ?)"
     );
 
     public long run(Connection conn, String sub_nbr, byte sf_type, byte start_time, byte end_time, String numberx) throws SQLException {
         //long s_id = -1;
 
-        try (PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber)) {
+        try {
+            PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber);
             stmt.setString(1, sub_nbr);
-            try (ResultSet results = stmt.executeQuery()) {
-                if (results.next()) {
-                    //s_id = results.getLong(1);
-                }
-            }
+            stmt.executeQuery();
+
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        try (PreparedStatement stmt = this.getPreparedStatement(conn, getSpecialFacility)) {
+        try {
+            PreparedStatement stmt = this.getPreparedStatement(conn, getSpecialFacility);
             //stmt.setLong(1, s_id);
-            try (ResultSet results = stmt.executeQuery()) {
-
-            }
+            stmt.executeQuery();
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // Inserting a new CALL_FORWARDING record only succeeds 30% of the time
 
         int rows_updated = -1;
 
-        try (PreparedStatement stmt = this.getPreparedStatement(conn, insertCallForwarding)) {
+        try {
+            PreparedStatement stmt = this.getPreparedStatement(conn, insertCallForwarding);
             //stmt.setLong(1, s_id);
             stmt.setByte(1, sf_type);
             stmt.setByte(2, start_time);
             stmt.setByte(3, end_time);
             stmt.setString(4, numberx);
 
-
             try {
                 rows_updated = stmt.executeUpdate();
             } catch (SQLException ex) {
                 throw new UserAbortException("Failed to insert a row in " + TATPConstants.TABLENAME_CALL_FORWARDING);
             }
+            stmt.close();
+        } catch (Exception e) {
+            System.err.printf("WARN: %s\n", e.getMessage());
         }
+
         return (rows_updated);
     }
 }
