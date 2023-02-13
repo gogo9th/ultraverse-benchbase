@@ -107,14 +107,34 @@ public class Payment extends TPCCProcedure {
             "  FROM " + TPCCConstants.TABLENAME_CUSTOMER +
             " WHERE C_W_ID = ? " +
             "   AND C_D_ID = ? " +
-            "   AND C_LAST = ? " +
+            "   OR C_LAST = ? " +
             " ORDER BY C_FIRST");
+
+
+    public final SQLStmt Payment_Procedure = new SQLStmt(
+            "CALL Payment (?, ?, ?, ?, ?, ?)");
+
 
     public void run(Connection conn, Random gen, int w_id, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker worker, WorkloadConfiguration configuration) throws SQLException {
 
         configuration.updateQueryCount(7);
         configuration.updateTransactionCount(1);
 
+        configuration.executedQueryCount += 7;
+        configuration.executedTransactionCount++;
+
+
+      //configuration.updateQueryCount(2);
+
+        configuration.updateQueryCount(1);
+        configuration.executedQueryCount += 1;
+
+//System.out.println("CALL Payment(" + w_id + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ", " + TPCCConfig.configDistPerWhse + ", " + TPCCConfig.configCustPerDist + ")"); 
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Payment_Procedure, w_id, numWarehouses, terminalDistrictLowerID, terminalDistrictUpperID, TPCCConfig.configDistPerWhse, TPCCConfig.configCustPerDist)) {
+            preparedStatement.execute();
+        }
+
+/*
         if (configuration.statedb > 0 && gen.nextInt(numWarehouses) != 1) 
             return;
         configuration.executedQueryCount += 7;
@@ -238,7 +258,7 @@ public class Payment extends TPCCProcedure {
             LOG.trace(terminalMessage.toString());
 
         }
-
+*/
     }
 
     private int getCustomerWarehouseID(Random gen, int w_id, int numWarehouses, int x) {

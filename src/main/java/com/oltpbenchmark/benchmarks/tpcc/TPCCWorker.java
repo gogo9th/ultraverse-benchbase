@@ -23,6 +23,7 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.tpcc.procedures.TPCCProcedure;
 import com.oltpbenchmark.types.TransactionStatus;
+import com.oltpbenchmark.benchmarks.tpcc.TPCCUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public class TPCCWorker extends Worker<TPCCBenchmark> {
     protected TransactionStatus executeWork(Connection conn, TransactionType nextTransaction) throws UserAbortException, SQLException {
         try {
             TPCCProcedure proc = (TPCCProcedure) this.getProcedure(nextTransaction.getProcedureClass());
-            proc.run(conn, gen, terminalWarehouseID, numWarehouses,
+            proc.run(conn, gen, /*HACK CHANGE*/ TPCCUtil.randomNumber(1,10, gen)/*terminalWarehouseID*/, numWarehouses,
                     terminalDistrictLowerID, terminalDistrictUpperID, this, configuration);
         } catch (ClassCastException ex) {
             //fail gracefully

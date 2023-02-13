@@ -93,10 +93,20 @@ public class NewOrder extends TPCCProcedure {
             " VALUES (?,?,?,?,?,?,?,?,?)");
 
 
-    public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
-        int districtID = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
-        int customerID = TPCCUtil.getCustomerID(gen);
+    public final SQLStmt NewOrder_Procedure = new SQLStmt(
+            "CALL NewOrder (?, ?, ?, ?, ?, ?)");
 
+    public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
+
+
+//System.out.println("CALL NewOrder(" + terminalWarehouseID + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ", " + TPCCConfig.configItemCount + ", " + TPCCConfig.configCustPerDist + ")");
+
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, numWarehouses, terminalDistrictLowerID, terminalDistrictUpperID, TPCCConfig.configItemCount, TPCCConfig.configCustPerDist)) {
+            preparedStatement.execute();
+        }
+/*
+        int customerID = TPCCUtil.getCustomerID(gen);
+        int districtID = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
         int numItems = TPCCUtil.randomNumber(5, 15, gen);
 
         int[] itemIDs = new int[numItems];
@@ -130,7 +140,7 @@ public class NewOrder extends TPCCProcedure {
         configuration.executedQueryCount += (5 + numItems * 4);
         configuration.executedQueryCount += numItems;
         newOrderTransaction(terminalWarehouseID, districtID, customerID, numItems, allLocal, itemIDs, supplierWarehouseIDs, orderQuantities, conn);
-
+*/
     }
 
 
@@ -138,18 +148,18 @@ public class NewOrder extends TPCCProcedure {
                                      int o_ol_cnt, int o_all_local, int[] itemIDs,
                                      int[] supplierWarehouseIDs, int[] orderQuantities, Connection conn) throws SQLException {
 
+        int d_next_o_id = getDistrict(conn, w_id, d_id);
 
         getCustomer(conn, w_id, d_id, c_id);
 
         getWarehouse(conn, w_id);
-
-        int d_next_o_id = getDistrict(conn, w_id, d_id);
 
         updateDistrict(conn, w_id, d_id);
 
         insertOpenOrder(conn, w_id, d_id, c_id, o_ol_cnt, o_all_local, d_next_o_id);
 
         insertNewOrder(conn, w_id, d_id, d_next_o_id);
+
 
         try (PreparedStatement stmtUpdateStock = this.getPreparedStatement(conn, stmtUpdateStockSQL);
              PreparedStatement stmtInsertOrderLine = this.getPreparedStatement(conn, stmtInsertOrderLineSQL)) {

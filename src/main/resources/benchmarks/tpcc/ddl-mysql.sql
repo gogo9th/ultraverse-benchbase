@@ -154,3 +154,275 @@ CREATE INDEX idx_order ON oorder (o_w_id, o_d_id, o_c_id, o_id);
 
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+-- Utility transactions (procedures)
+DROP FUNCTION IF EXISTS RandomNumber;
+DELIMITER //
+CREATE FUNCTION RandomNumber(minval INT, maxval INT) RETURNS FLOAT
+BEGIN
+  RETURN FLOOR(RAND()*(maxval - minval + 1)) + minval;
+END//
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS NonUniformRandom;
+DELIMITER //
+CREATE FUNCTION NonUniformRandom(a INT, c INT, minval INT, maxval INT) RETURNS FLOAT
+BEGIN
+  RETURN (((randomNumber(0, a) | randomNumber(minval, maxval)) + c) MOD (maxval - minval + 1)) + minval;
+END//
+DELIMITER ;
+
+
+-- NewOrder transaction (procedure)
+DROP PROCEDURE IF EXISTS NewOrder;
+DELIMITER //
+CREATE PROCEDURE NewOrder(IN var_w_id INT,
+                                   IN var_numWarehouses INT,
+                                   IN var_terminalDistrictLowerID INT,
+                                   IN var_terminalDistrictUpperID INT,
+                                   IN var_configItemCount INT,
+                                   IN var_configCustPerDist INT
+                        )
+NewOrder_Label:BEGIN
+
+  DECLARE var_d_id INT;
+  DECLARE var_c_id INT;
+  DECLARE var_o_ol_cnt INT;
+  DECLARE var_loop_cnt INT DEFAULT 0;
+
+  DECLARE var_ol_supply_w_id INT;
+  DECLARE var_i_id INT;
+  DECLARE var_ol_quantity INT;
+  DECLARE var_s_quantity INT;
+  DECLARE var_s_dist_info VARCHAR(24);
+  DECLARE var_o_all_local INT DEFAULT 1;
+  DECLARE var_s_remote_cnt_increment INT;
+  DECLARE var_d_next_o_id INT DEFAULT -1;
+  DECLARE var_i_price DECIMAL(5, 2);
+
+  SET var_c_id = (SELECT NonUniformRandom(1023, 259, 1, var_configCustPerDist));
+  SET var_d_id = (SELECT RandomNumber(var_terminalDistrictUpperID, var_terminalDistrictLowerID));
+  SET var_o_ol_cnt = (SELECT RandomNumber(5, 15));
+
+  IF ((SELECT COUNT(*) FROM customer
+  WHERE C_W_ID = var_w_id AND C_D_ID = var_d_id AND C_ID = var_c_id) < 1) THEN
+    SELECT "Error: the customer is not found";
+    LEAVE NewOrder_Label;
+  ELSEIF ((SELECT COUNT(*) FROM warehouse WHERE W_ID = var_w_id) < 1) THEN
+    SELECT "Error: the warehouse is not found";
+    LEAVE NewOrder_Label;
+  END IF;
+
+  SELECT D_NEXT_O_ID INTO var_d_next_o_id FROM district WHERE D_W_ID = var_w_id AND D_ID = var_d_id FOR UPDATE;
+
+  IF var_d_next_o_id = -1 THEN
+    SELECT "Error: the district is not found";
+    LEAVE NewOrder_Label;
+  END IF;
+
+  UPDATE district SET D_NEXT_O_ID = D_NEXT_O_ID + 1 WHERE D_W_ID = var_w_id AND d_id = var_d_id;
+
+  INSERT INTO oorder (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_OL_CNT, O_ALL_LOCAL)
+  VALUES (var_d_next_o_id, var_d_id, var_w_id, var_c_id, CURRENT_TIMESTAMP(), var_loop_cnt, var_o_all_local);
+
+  INSERT INTO new_order (NO_O_ID, NO_D_ID, NO_W_ID) VALUES (var_d_next_o_id, var_d_id, var_w_id);
+
+  Order_Loop:WHILE (var_loop_cnt < var_o_ol_cnt) DO
+    SET var_i_id = (NonUniformRandom(8191, 7911, 1, var_configItemCount));
+    SET var_ol_quantity = (RandomNumber(1, 10));
+
+    SELECT I_PRICE INTO var_i_price FROM item WHERE I_ID = var_i_id;
+
+    IF (RandomNumber(1, 100) > 1) THEN
+      SET var_ol_supply_w_id = var_w_id;
+    ELSE
+      SET var_o_all_local = 0;
+      SET var_ol_supply_w_id = (RandomNumber(1, var_numWarehouses));
+      WHILE (var_numWarehouses > 1 AND var_ol_supply_w_id = var_w_id) DO
+        SET var_ol_supply_w_id = (RandomNumber(1, var_numWarehouses));
+      END WHILE;
+    END IF;
+
+    IF (var_ol_supply_w_id = var_w_id) THEN
+      SET var_s_remote_cnt_increment = 0;
+    ELSE
+      SET var_s_remote_cnt_increment = 1;
+    END IF;
+
+    SELECT S_QUANTITY, S_DIST_01 INTO var_s_quantity, var_s_dist_info FROM stock
+    WHERE S_I_ID = var_i_id AND S_W_ID = var_ol_supply_w_id FOR UPDATE;
+
+    SET var_s_quantity := var_s_quantity - var_ol_quantity;
+    IF (var_s_quantity < 10) THEN
+      SET var_s_quantity := var_s_quantity + 91;
+    END IF;
+
+    INSERT INTO order_line (OL_O_ID, OL_D_ID, OL_W_ID, OL_NUMBER, OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DIST_INFO) VALUES (var_d_next_o_id, var_d_id, var_w_id, var_loop_cnt, var_i_id, var_ol_supply_w_id, var_ol_quantity, var_ol_quantity * var_i_price, var_s_dist_info);
+
+    UPDATE stock SET S_YTD := S_YTD + var_ol_quantity,
+                     S_ORDER_CNT := S_ORDER_CNT + 1,
+                     S_REMOTE_CNT := S_REMOTE_CNT + var_s_remote_cnt_increment
+    WHERE S_I_ID = var_i_id AND S_W_ID = var_ol_supply_w_id;
+
+    SET var_loop_cnt := var_loop_cnt + 1;
+  END WHILE;
+END//
+DELIMITER ;
+
+
+-- Payment transaction (procedure)
+DROP PROCEDURE IF EXISTS Payment;
+DELIMITER //
+CREATE PROCEDURE Payment(IN var_w_id INT,
+                                   IN var_numWarehouses INT,
+                                   IN var_terminalDistrictLowerID INT,
+                                   IN var_terminalDistrictUpperID INT,
+                                   IN var_configDistPerWhse INT,
+                                   IN var_configCustPerDist INT
+                         )
+Payment_Label:BEGIN
+
+  DECLARE var_d_id INT;
+  DECLARE var_paymentAmount DECIMAL(6,2);
+  DECLARE var_w_name VARCHAR(10) DEFAULT NULL;
+  DECLARE var_d_name VARCHAR(10) DEFAULT NULL;
+  DECLARE var_x INT;
+  DECLARE var_customerDistrictID INT;
+  DECLARE var_customerWarehouseID INT;
+  DECLARE var_c_balance DECIMAL(12,2);     
+  DECLARE var_c_ytd_payment FLOAT;
+  DECLARE var_c_payment_cnt INT DEFAULT -1;
+  DECLARE var_c_data VARCHAR(500);
+  DECLARE var_c_id INT;
+  DECLARE var_c_credit VARCHAR(2);
+
+  SET var_d_id = (SELECT RandomNumber(var_terminalDistrictLowerID, var_terminalDistrictUpperID));
+
+  SET var_paymentAmount := RandomNumber(100, 500000) / 100.0;
+  SELECT W_NAME INTO var_w_name FROM warehouse WHERE W_ID = var_w_id;
+
+  IF (var_w_name IS NULL) THEN
+    SELECT "Error: w_id is not found";
+    LEAVE Payment_Label;
+  END IF;
+
+  UPDATE warehouse SET W_YTD := W_YTD + var_paymentAmount WHERE W_ID = var_w_id;
+
+  SELECT D_NAME INTO var_d_name FROM district
+  WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
+
+  IF (var_d_name IS NULL) THEN
+    SELECT "Error: d_id is not found";
+    LEAVE Payment_Label;
+  END IF;
+
+  UPDATE district SET D_YTD := D_YTD + var_paymentAmount 
+  WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
+
+  SET var_x := RandomNumber(1, 100);
+
+  IF (var_x <= 85) THEN
+    SET var_customerDistrictID := var_d_id;
+  ELSE
+    SET var_customerDistrictID := RandomNumber(1, var_configDistPerWhse);  
+  END IF;
+
+  IF (var_x <= 85) THEN
+    SET var_customerWarehouseID := var_w_id;
+  ELSE
+    SET var_customerWarehouseID := RandomNumber(1, var_numWarehouses);  
+    WHILE (var_customerWarehouseID = var_w_id AND var_numWarehouses = 1) DO
+      SET var_customerWarehouseID := RandomNumber(1, var_numWarehouses);      
+    END WHILE;
+  END IF;
+
+  SET var_c_id = (SELECT NonUniformRandom(1023, 259, 1, var_configCustPerDist));
+
+  SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit FROM customer
+  WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;
+
+  IF (var_c_payment_cnt = -1) THEN
+    SELECT "Error: paid customer is not found";
+    LEAVE Payment_Label;
+  END IF;
+  
+  SET var_c_balance := var_c_balance - var_paymentAmount;
+  SET var_c_ytd_payment := var_c_ytd_payment + var_paymentAmount;
+  SET var_c_payment_cnt := var_c_payment_cnt + 1;
+
+  IF (var_c_credit = 'BC') THEN
+    SELECT C_DATA INTO var_c_data FROM customer
+    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;  
+
+    UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment, 
+    C_PAYMENT_CNT = var_c_payment_cnt, C_DATA = var_c_data 
+    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID 
+    AND C_ID = var_c_id;
+    
+  ELSE
+    UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment, 
+    C_PAYMENT_CNT = var_c_payment_cnt
+    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID 
+    AND C_ID = var_c_id;
+  
+  END IF;
+  
+  INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, CURRENT_TIMESTAMP(), var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
+      
+END//
+DELIMITER ;
+
+-- Delivery transaction (procedure)
+
+DROP PROCEDURE IF EXISTS Delivery;
+DELIMITER //
+CREATE PROCEDURE Delivery(IN var_w_id INT,
+                         IN var_numWarehouses INT,
+                         IN var_terminalDistrictLowerID INT,
+                         IN var_terminalDistrictUpperID INT
+                        )
+Delivery_Label:BEGIN
+
+  DECLARE var_d_id INT DEFAULT 1;
+  DECLARE var_no_o_id INT;
+  DECLARE var_o_c_id INT;
+  DECLARE var_o_carrier_id INT;
+  DECLARE var_ol_total DECIMAL(6, 2);  
+
+  SET var_o_carrier_id := RandomNumber(1, 10);
+  
+  Delivery_Loop:WHILE (var_d_id < var_terminalDistrictUpperID) DO
+    SET var_no_o_id := -1;
+
+    SELECT NO_O_ID INTO var_no_o_id FROM new_order 
+    WHERE NO_D_ID = var_d_id AND NO_W_ID = var_w_id 
+    ORDER BY NO_O_ID ASC LIMIT 1;
+
+    IF (var_no_o_id = -1) THEN
+      SELECT "Warning: No new order";
+    ELSE
+      DELETE FROM new_order 
+      WHERE NO_O_ID = var_no_o_id AND NO_D_ID = var_d_id AND NO_W_ID = var_w_id;
+
+      UPDATE oorder SET O_CARRIER_ID = var_o_carrier_id 
+      WHERE O_ID = var_no_o_id AND O_D_ID = var_d_id AND O_W_ID = var_w_id;
+    
+      UPDATE order_line SET OL_DELIVERY_D = CURRENT_TIMESTAMP()
+      WHERE OL_O_ID = var_no_o_id AND OL_D_ID = var_d_id AND OL_W_ID = var_w_id;
+
+      SELECT O_C_ID INTO var_o_c_id FROM oorder 
+      WHERE O_ID = var_no_o_id AND O_D_ID = var_d_id AND O_W_ID = var_w_id;
+
+      SELECT SUM(OL_AMOUNT) INTO var_ol_total FROM order_line
+      WHERE OL_O_ID = var_no_o_id AND OL_D_ID = var_d_id AND OL_W_ID = var_w_id;
+
+      UPDATE customer 
+      SET C_BALANCE := C_BALANCE + var_ol_total, C_DELIVERY_CNT := C_DELIVERY_CNT + 1
+      WHERE C_W_ID = var_w_id AND C_D_ID = var_d_id AND C_ID = var_o_c_id; 
+    END IF;
+
+    SET var_d_id := var_d_id + 1;
+  END WHILE;
+END//
+DELIMITER ;

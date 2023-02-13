@@ -29,10 +29,17 @@ public final class TPCCConfig {
 
     public final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    /* 정상적 세팅값. 최종  테스트시에는이 세팅값을 사용해야 합니다. */
+    //public final static int configWhseCount = 1;
+    //public final static int configItemCount = 100000; // tpc-c std = 100,000
+    //public final static int configDistPerWhse = 10; // tpc-c std = 10
+    //public final static int configCustPerDist = 3000; // tpc-c std = 3,000
+
+    /* 디버깅 전용 세팅값. load 소요시간을 90초 내외로 단축하도록 일부 수치를 낮추었습니다. */
     public final static int configWhseCount = 1;
-    public final static int configItemCount = 100000; // tpc-c std = 100,000
+    public final static int configItemCount = 1000; // tpc-c std = 100,000
     public final static int configDistPerWhse = 10; // tpc-c std = 10
-    public final static int configCustPerDist = 3000; // tpc-c std = 3,000
+    public final static int configCustPerDist = 300; // tpc-c std = 3,000
 
     /**
      * An invalid item id used to rollback a new order transaction.

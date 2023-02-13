@@ -3,7 +3,7 @@
 #set -x
 
 if [ $# -ne 3 ] && [ $# -ne 4 ] ; then
-	echo "Usage: $0 <epinions|resourcestresser|tatp|seats|tpcc> <mariadb|statedb> <querycount in millions> (load|create|execute|prepare)"
+	echo "Usage: $0 <epinions|resourcestresser|tatp|seats|tpcc> <mariadb|statedb> <querycount, either 1m|10m|100m|1b> (load|create|execute|prepare)"
 	exit
 fi
 

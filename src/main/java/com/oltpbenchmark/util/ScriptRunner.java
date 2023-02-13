@@ -35,7 +35,7 @@ import java.sql.*;
 public class ScriptRunner {
     private static final Logger LOG = LoggerFactory.getLogger(ScriptRunner.class);
 
-    private static final String DEFAULT_DELIMITER = ";";
+    private static String DEFAULT_DELIMITER = ";";
 
     private final Connection connection;
     private final boolean stopOnError;
@@ -94,6 +94,13 @@ public class ScriptRunner {
                 }
                 String trimmedLine = line.trim();
                 line = line.replaceAll("\\-\\-.*$", ""); // remove comments in line;
+
+                // CHANGE
+                if (line.split(" ").length >= 2 && line.split(" ")[0].toLowerCase().equals("delimiter"))
+                {   System.out.println("Delimiter Changed to " + line.split(" ")[1]);
+                    DEFAULT_DELIMITER = line.split(" ")[1];
+                    continue;
+                }
 
                 if (trimmedLine.startsWith("--") || trimmedLine.startsWith("//")) {
                     LOG.debug(trimmedLine);

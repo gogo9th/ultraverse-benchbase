@@ -82,8 +82,18 @@ public class UpdateReservation extends Procedure {
             ReserveSeat3,
     };
 
+    public final SQLStmt UpdateReservation_Procedure = new SQLStmt(
+            "CALL UpdateReservation(?, ?, ?, ?, ?, ?)"
+    );
+
+
     public void run(Connection conn, long r_id, String f_id, String c_id, long seatnum, long attr_idx, long attr_val) throws SQLException {
 
+
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, UpdateReservation_Procedure, r_id, f_id, c_id, seatnum, attr_idx, attr_val)) {
+            preparedStatement.execute();
+        }
+/*
         boolean found;
 
         // Check if Seat is Available
@@ -122,6 +132,6 @@ public class UpdateReservation extends Procedure {
 
 
         LOG.debug(String.format("Updated reservation on flight %s for customer %s", f_id, c_id));
-
+*/
     }
 }

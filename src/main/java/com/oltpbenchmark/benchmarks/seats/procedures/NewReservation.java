@@ -114,7 +114,20 @@ public class NewReservation extends Procedure {
             "   ? " +   // R_ATTR08
             ")");
 
+    public final SQLStmt NewReservation_Procedure = new SQLStmt(
+            "CALL NewReservation(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+
+
+
+
     public void run(Connection conn, long r_id, String c_id, String f_id, long seatnum, double price, long[] attrs) throws SQLException {
+
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewReservation_Procedure, r_id, c_id, f_id, seatnum, price, attrs[0], attrs[1], attrs[2], attrs[3], attrs[4], attrs[5], attrs[6], attrs[7], attrs[8])) {
+            preparedStatement.execute();
+        }
+
+/*
         boolean found;
 
         long airline_id;
@@ -206,7 +219,7 @@ public class NewReservation extends Procedure {
 
         LOG.debug(String.format("Reserved new seat on flight %s for customer %s [seatsLeft=%d]",
                 f_id, c_id, seats_left - 1));
-
+*/
 
     }
 }

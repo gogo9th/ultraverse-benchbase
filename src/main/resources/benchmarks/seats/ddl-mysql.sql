@@ -1,3 +1,4 @@
+
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 
@@ -288,3 +289,214 @@ CREATE TABLE reservation (
 
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+-- UpdateCustomer transaction (procedure)
+DROP PROCEDURE IF EXISTS UpdateCustomer;
+DELIMITER //
+CREATE PROCEDURE UpdateCustomer(IN var_c_id VARCHAR(128), 
+                                IN var_c_id_str VARCHAR(64), 
+                                IN var_attr0 BIGINT, 
+                                IN var_attr1 BIGINT)
+UpdateCustomer_Label:BEGIN
+
+   DECLARE var_c_base_ap_id BIGINT DEFAULT -1; 
+
+   IF var_c_id IS NULL THEN
+      SELECT c_id INTO var_c_id FROM customer2 WHERE c_id_str = var_c_id_str;
+   END IF;
+
+   IF var_c_id IS NULL THEN
+      SELECT "c_id is not found";
+      LEAVE UpdateCustomer_Label;      
+   END IF;
+
+   SELECT c_base_ap_id INTO var_c_base_ap_id FROM customer2 WHERE c_id = var_c_id;
+
+   IF var_c_base_ap_id = -1 THEN
+      SELECT "c_base_ap_id is not found";
+      LEAVE UpdateCustomer_Label;      
+   END IF;
+
+   SELECT * FROM airport, country WHERE ap_id = var_c_base_ap_id AND ap_co_id = co_id;
+
+   UPDATE customer2 SET c_iattr00 = var_attr0, c_iattr01 = var_attr1 WHERE c_id = var_c_id;
+
+   UPDATE frequent_flyer SET ff_iattr00 = var_attr0, ff_iattr01 = var_attr1 WHERE ff_c_id = var_c_id AND ff_al_id IN (SELECT ff_al_id FROM frequent_flyer WHERE ff_c_id = var_c_id);
+
+END//
+DELIMITER ;
+
+
+
+-- NewReservation transaction (procedure)
+DROP PROCEDURE IF EXISTS NewReservation;
+DELIMITER //
+CREATE PROCEDURE NewReservation(IN var_r_id BIGINT, 
+                                IN var_c_id VARCHAR(128), 
+                                IN var_f_id VARCHAR(128), 
+                                IN var_seatnum BIGINT,
+                                IN var_price FLOAT,
+                                IN var_attr0 BIGINT,
+                                IN var_attr1 BIGINT,                                
+                                IN var_attr2 BIGINT,                                
+                                IN var_attr3 BIGINT,
+                                IN var_attr4 BIGINT,
+                                IN var_attr5 BIGINT,                                
+                                IN var_attr6 BIGINT,                                
+                                IN var_attr7 BIGINT,
+                                IN var_attr8 BIGINT
+                                )
+NewReservation_Label:BEGIN
+
+DECLARE var_airline_id BIGINT;
+DECLARE var_seats_left INT DEFAULT -1;
+DECLARE var_found BIGINT DEFAULT -1;
+DECLARE var_taken_seat_r_id BIGINT DEFAULT -1;
+
+SELECT F_AL_ID, F_SEATS_LEFT INTO var_airline_id, var_seats_left
+  FROM flight, airline
+  WHERE F_ID = var_f_id AND F_AL_ID = AL_ID;
+
+IF var_seats_left = -1 THEN
+  SELECT "Error: no seats available";
+  LEAVE NewReservation_Label;
+END IF;
+
+SELECT R_ID INTO var_taken_seat_r_id FROM reservation 
+  WHERE R_F_ID = var_f_id AND R_SEAT = var_seatnum;
+
+IF var_taken_seat_r_id != -1 THEN
+  SELECT "Error: this seat is already taken by another customer";
+  LEAVE NewReservation_Label;
+END IF;
+
+SELECT R_ID INTO var_found FROM reservation
+  WHERE R_C_ID = var_c_id AND R_F_ID = var_f_id;
+
+IF var_found != -1 THEN
+  SELECT "Error: this customer already has a seat on this flight";
+  LEAVE NewReservation_Label;
+END IF;
+
+SELECT C_BASE_AP_ID INTO var_found
+  FROM customer2 
+  WHERE C_ID = var_c_id;
+
+IF var_found = -1 THEN
+  SELECT "Error: customer not found";
+  LEAVE NewReservation_Label;
+END IF;
+
+INSERT INTO reservation 
+  (R_ID, R_C_ID, R_F_ID, R_SEAT, R_PRICE, R_IATTR00, R_IATTR01, R_IATTR02, R_IATTR03, R_IATTR04, R_IATTR05, R_IATTR06, R_IATTR07, R_IATTR08) 
+  VALUES (var_r_id, var_c_id, var_f_id, var_seatnum, var_price, var_attr0, var_attr1, var_attr2, var_attr3, var_attr4, var_attr5, var_attr6, var_attr7, var_attr8);
+
+UPDATE flight SET F_SEATS_LEFT = F_SEATS_LEFT - 1 WHERE F_ID = var_f_id;
+
+UPDATE customer2 
+  SET C_IATTR10 = C_IATTR10 + 1, C_IATTR11 = C_IATTR11 + 1, C_IATTR12 = var_attr0, C_IATTR13 = var_attr1, C_IATTR14 = var_attr2, C_IATTR15 = var_attr3
+  WHERE C_ID = var_c_id;
+
+UPDATE frequent_flyer
+  SET FF_IATTR10 = FF_IATTR10 + 1, FF_IATTR11 = var_attr4, FF_IATTR12 = var_attr5, FF_IATTR13 = var_attr6, FF_IATTR14 = var_attr7
+  WHERE FF_C_ID = var_c_id AND FF_AL_ID = var_airline_id;  
+
+END//
+DELIMITER ;
+
+
+----- UpdateReservation transaction (procedure)
+
+DROP PROCEDURE IF EXISTS UpdateReservation;
+DELIMITER //
+CREATE PROCEDURE UpdateReservation(IN var_r_id BIGINT,
+                                   IN var_f_id VARCHAR(128),
+                                   IN var_c_id VARCHAR(128),
+                                   IN var_seatnum BIGINT,
+                                   IN var_attr_idx BIGINT,
+                                   IN var_attr_val BIGINT)
+UpdateReservation_Label:BEGIN
+
+DECLARE var_check_r_id BIGINT DEFAULT -1;
+
+SELECT R_ID INTO var_check_r_id FROM reservation WHERE R_F_ID = var_f_id AND R_SEAT = var_seatnum;
+
+IF var_check_r_id != -1 THEN
+  SELECT "Error: The seat is already taken by another customer";
+  LEAVE UpdateReservation_Label;
+END IF;
+
+SELECT R_ID INTO var_check_r_id FROM reservation
+  WHERE R_C_ID = var_c_id AND R_F_ID = var_f_id;
+
+IF var_check_r_id = -1 THEN
+  SELECT "Error: the customer does not have a seat on this flight";
+  LEAVE UpdateReservation_Label;
+END IF;
+
+IF var_attr_idx = 0 THEN
+  UPDATE reservation SET R_SEAT = var_seatnum, R_IATTR00 = var_attr_val
+  WHERE R_ID = var_r_id AND R_C_ID = var_c_id AND R_F_ID = var_f_id;  
+ELSEIF var_attr_idx = 1 THEN
+  UPDATE reservation SET R_SEAT = var_seatnum, R_IATTR01 = var_attr_val
+  WHERE R_ID = var_r_id AND R_C_ID = var_c_id AND R_F_ID = var_f_id;
+ELSEIF var_attr_idx = 2 THEN
+  UPDATE reservation SET R_SEAT = var_seatnum, R_IATTR02 = var_attr_val
+  WHERE R_ID = var_r_id AND R_C_ID = var_c_id AND R_F_ID = var_f_id;
+ELSE
+  UPDATE reservation SET R_SEAT = var_seatnum, R_IATTR03 = var_attr_val
+  WHERE R_ID = var_r_id AND R_C_ID = var_c_id AND R_F_ID = var_f_id;
+END IF;
+  
+END//
+DELIMITER ;
+
+----- DeleteReservation transaction (procedure)
+
+DROP PROCEDURE IF EXISTS DeleteReservation;
+DELIMITER //
+CREATE PROCEDURE DeleteReservation(IN var_f_id VARCHAR(128),
+                                   IN var_c_id VARCHAR(128),
+                                   IN var_c_id_str VARCHAR(64),
+                                   IN var_ff_c_id_str VARCHAR(64),
+                                   IN var_ff_al_id BIGINT)
+DeleteReservation_Label:BEGIN
+
+DECLARE var_c_iattr00 BIGINT;
+DECLARE var_r_id BIGINT;
+DECLARE var_r_price FLOAT;
+
+IF (var_c_id_str IS NOT NULL AND LENGTH(var_c_id_str) > 0) THEN
+  SELECT C_ID INTO var_c_id FROM customer2 WHERE C_ID_STR = var_c_id_str;
+ELSE
+  SELECT C_ID, FF_AL_ID INTO var_c_id, var_ff_al_id FROM customer2, frequent_flyer WHERE FF_C_ID_STR = var_ff_c_id_str AND FF_C_ID = C_ID LIMIT 1;
+END IF;
+
+IF var_c_id IS NULL OR LENGTH(var_c_id) = 0 THEN
+  SELECT "Error: no customer record was found";
+  LEAVE DeleteReservation_Label;
+END IF;
+
+SELECT C_IATTR00, R_ID, R_PRICE INTO var_c_iattr00, var_r_id, var_r_price
+  FROM customer2, flight, reservation
+  WHERE C_ID = var_c_id AND C_ID = R_C_ID AND F_ID = var_f_id AND F_ID = R_F_ID;
+
+IF var_r_price IS NULL THEN
+  SELECT "Error: no reservation is found";
+  LEAVE DeleteReservation_Label;
+END IF;
+
+DELETE FROM reservation WHERE R_ID = var_r_id AND R_C_ID = var_c_id AND R_F_ID = var_f_id;
+
+UPDATE flight SET F_SEATS_LEFT = F_SEATS_LEFT + 1 WHERE F_ID = var_f_id;
+
+UPDATE customer2 
+  SET C_BALANCE = C_BALANCE - var_r_price, C_IATTR00 = var_c_iattr00, C_IATTR10 = C_IATTR10 - 1, C_IATTR11 = C_IATTR10 - 1 
+  WHERE C_ID = var_c_id;
+
+UPDATE frequent_flyer
+  SET FF_IATTR10 = FF_IATTR10 - 1 WHERE FF_C_ID = var_c_id AND FF_AL_ID = var_ff_al_id;
+
+END//
+DELIMITER ;

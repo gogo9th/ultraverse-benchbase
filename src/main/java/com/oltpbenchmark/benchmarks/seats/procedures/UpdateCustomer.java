@@ -73,7 +73,24 @@ public class UpdateCustomer extends Procedure {
                     "   AND FF_AL_ID = ? "
     );
 
+    public final SQLStmt UpdateCustomer_Procedure = new SQLStmt(
+            "CALL UpdateCustomer(?, ?, ?, ?)" 
+    );
+
     public void run(Connection conn, String c_id, String c_id_str, Long update_ff, long attr0, long attr1, WorkloadConfiguration configuration) throws SQLException {
+
+        configuration.executedQueryCount += 5;
+        configuration.updateQueryCount(5);
+
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, UpdateCustomer_Procedure, c_id, c_id_str, attr0, attr1)) {
+            preparedStatement.execute();
+        }
+        //if (updated != 1) {
+        //    throw new UserAbortException(String.format("Error Type [%s]: Failed to update customer #%s - Updated %d records", ErrorType.VALIDITY_ERROR, c_id, updated));
+        //}
+
+
+/*
         // Use C_ID_STR to get C_ID
 
         if (c_id == null) {
@@ -143,6 +160,7 @@ public class UpdateCustomer extends Procedure {
         if (updated != 1) {
             throw new UserAbortException(String.format("Error Type [%s]: Failed to update customer #%s - Updated %d records", ErrorType.VALIDITY_ERROR, c_id, updated));
         }
+*/
 
     }
 }

@@ -83,23 +83,34 @@ public class Delivery extends TPCCProcedure {
             "   AND C_ID = ? ");
 
 
+    public final SQLStmt Delivery_Procedure = new SQLStmt(
+            "CALL Delivery(?, ?, ?, ?)");
+
+
     public void run(Connection conn, Random gen, int w_id, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
 
 
         configuration.updateQueryCount(terminalDistrictUpperID * 7);
         configuration.updateQueryCount(terminalDistrictUpperID);
 
+//System.out.println("CALL Delivery(" + w_id + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ")");
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Delivery_Procedure, w_id, numWarehouses, terminalDistrictLowerID, terminalDistrictUpperID)) {
+            preparedStatement.execute();
+        }
+
+/*
         if (configuration.statedb > 0 && gen.nextInt(numWarehouses) != 1) 
             return;
 
         configuration.executedQueryCount += (terminalDistrictUpperID * 7);
+        configuration.executedTransactionCount += terminalDistrictUpperID;
+
         int o_carrier_id = TPCCUtil.randomNumber(1, 10, gen);
 
         int d_id;
 
         int[] orderIDs = new int[10];
 
-        configuration.executedTransactionCount += terminalDistrictUpperID;
         for (d_id = 1; d_id <= terminalDistrictUpperID; d_id++) {
             Integer no_o_id = getOrderId(conn, w_id, d_id);
 
@@ -145,7 +156,7 @@ public class Delivery extends TPCCProcedure {
             terminalMessage.append("+-----------------------------------------------------------------+\n\n");
             LOG.trace(terminalMessage.toString());
         }
-
+*/
     }
 
     private Integer getOrderId(Connection conn, int w_id, int d_id) throws SQLException {

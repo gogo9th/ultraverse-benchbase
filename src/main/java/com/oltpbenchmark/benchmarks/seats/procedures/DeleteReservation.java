@@ -79,9 +79,21 @@ public class DeleteReservation extends Procedure {
                     " WHERE FF_C_ID = ? " +
                     "   AND FF_AL_ID = ?");
 
+
+    public final SQLStmt DeleteReservation_Procedure = new SQLStmt(
+            "CALL DeleteReservation(?, ?, ?, ?, ?)"
+    );
+
+
+
+
+
     public void run(Connection conn, String f_id, String c_id, String c_id_str, String ff_c_id_str, Long ff_al_id) throws SQLException {
 
-
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, DeleteReservation_Procedure, f_id, c_id, c_id_str, ff_c_id_str, ff_al_id)) {
+            preparedStatement.execute();
+        }
+/*
         // If we weren't given the customer id, then look it up
         if (c_id == null) {
 
@@ -170,7 +182,7 @@ public class DeleteReservation extends Procedure {
         }
 
         LOG.debug(String.format("Deleted reservation on flight %s for customer %s [seatsLeft=%d]", f_id, c_id, seats_left + 1));
-
+*/
     }
 
 }
