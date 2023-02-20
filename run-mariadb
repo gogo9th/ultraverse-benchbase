@@ -7,9 +7,9 @@ if [ $# -ne 3 ] && [ $# -ne 4 ] ; then
 	exit
 fi
 
-sudo rm -f /var/log/mysql/mylog
-sleep 1
-echo "set global general_log = 0; set global general_log = 1; set global general_log_file = '/var/log/mysql/mylog'; CREATE DATABASE IF NOT EXISTS benchbase;" | mysql -uadmin -ppassword
+#sudo rm -f /var/log/mysql/mylog
+#sleep 1
+#echo "set global general_log = 0; set global general_log = 1; set global general_log_file = '/var/log/mysql/mylog'; CREATE DATABASE IF NOT EXISTS benchbase;" | mysql -uadmin -ppassword
 
 cd target/benchbase-mariadb
 
