@@ -11,6 +11,12 @@ DROP TABLE IF EXISTS stock;
 DROP TABLE IF EXISTS item;
 DROP TABLE IF EXISTS warehouse;
 
+DROP TABLE IF EXISTS __ULTRAVERSE_PROCEDURE_HINT;
+
+CREATE TABLE __ULTRAVERSE_PROCEDURE_HINT(
+    procname varchar(128) NOT NULL
+) ENGINE = BLACKHOLE;
+
 CREATE TABLE warehouse (
     w_id       int            NOT NULL,
     w_ytd      decimal(14, 2) NOT NULL,
@@ -161,6 +167,7 @@ DROP FUNCTION IF EXISTS RandomNumber;
 DELIMITER //
 CREATE FUNCTION RandomNumber(minval INT, maxval INT) RETURNS FLOAT
 BEGIN
+  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('RandomNumber');
   RETURN FLOOR(RAND()*(maxval - minval + 1)) + minval;
 END//
 DELIMITER ;
@@ -169,6 +176,7 @@ DROP FUNCTION IF EXISTS NonUniformRandom;
 DELIMITER //
 CREATE FUNCTION NonUniformRandom(a INT, c INT, minval INT, maxval INT) RETURNS FLOAT
 BEGIN
+  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('NonUniformRandom');
   RETURN (((randomNumber(0, a) | randomNumber(minval, maxval)) + c) MOD (maxval - minval + 1)) + minval;
 END//
 DELIMITER ;
@@ -185,7 +193,6 @@ CREATE PROCEDURE NewOrder(IN var_w_id INT,
                                    IN var_configCustPerDist INT
                         )
 NewOrder_Label:BEGIN
-
   DECLARE var_d_id INT;
   DECLARE var_c_id INT;
   DECLARE var_o_ol_cnt INT;
@@ -200,6 +207,8 @@ NewOrder_Label:BEGIN
   DECLARE var_s_remote_cnt_increment INT;
   DECLARE var_d_next_o_id INT DEFAULT -1;
   DECLARE var_i_price DECIMAL(5, 2);
+
+  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('NewOrder');
 
   SET var_c_id = (SELECT NonUniformRandom(1023, 259, 1, var_configCustPerDist));
   SET var_d_id = (SELECT RandomNumber(var_terminalDistrictUpperID, var_terminalDistrictLowerID));
@@ -297,6 +306,8 @@ Payment_Label:BEGIN
   DECLARE var_c_id INT;
   DECLARE var_c_credit VARCHAR(2);
 
+  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Payment');
+
   SET var_d_id = (SELECT RandomNumber(var_terminalDistrictLowerID, var_terminalDistrictUpperID));
 
   SET var_paymentAmount := RandomNumber(100, 500000) / 100.0;
@@ -389,6 +400,8 @@ Delivery_Label:BEGIN
   DECLARE var_o_c_id INT;
   DECLARE var_o_carrier_id INT;
   DECLARE var_ol_total DECIMAL(6, 2);  
+
+  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Delivery');
 
   SET var_o_carrier_id := RandomNumber(1, 10);
   
