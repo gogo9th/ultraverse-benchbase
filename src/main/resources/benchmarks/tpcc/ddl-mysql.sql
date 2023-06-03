@@ -269,8 +269,9 @@ NewOrder_Label:BEGIN
 
     INSERT INTO order_line (OL_O_ID, OL_D_ID, OL_W_ID, OL_NUMBER, OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DIST_INFO) VALUES (var_d_next_o_id, var_d_id, var_w_id, var_loop_cnt, var_i_id, var_ol_supply_w_id, var_ol_quantity, var_ol_quantity * var_i_price, var_s_dist_info);
 
-    UPDATE stock SET S_YTD := S_YTD + var_s_quantity,
-                     S_ORDER_CNT := S_ORDER_CNT + var_ol_quantity,
+    UPDATE stock SET S_QUANTITY := var_s_quantity, 
+                     S_YTD := S_YTD + var_ol_quantity,
+                     S_ORDER_CNT := S_ORDER_CNT + 1,
                      S_REMOTE_CNT := S_REMOTE_CNT + var_s_remote_cnt_increment
     WHERE S_I_ID = var_i_id AND S_W_ID = var_ol_supply_w_id;
 
