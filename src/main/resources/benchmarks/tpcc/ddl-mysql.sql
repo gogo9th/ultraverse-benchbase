@@ -343,14 +343,14 @@ Payment_Label:BEGIN
     SET var_customerWarehouseID := var_w_id;
   ELSE
     SET var_customerWarehouseID := RandomNumber(1, var_numWarehouses);  
-    WHILE (var_customerWarehouseID = var_w_id AND var_numWarehouses = 1) DO
+    WHILE (var_customerWarehouseID = var_w_id AND var_numWarehouses > 1) DO
       SET var_customerWarehouseID := RandomNumber(1, var_numWarehouses);      
     END WHILE;
   END IF;
 
   SET var_c_id = (SELECT NonUniformRandom(1023, 259, 1, var_configCustPerDist));
 
-  SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit FROM customer
+  SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT, C_DATA INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit, var_c_data FROM customer
   WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;
 
   IF (var_c_payment_cnt = -1) THEN
@@ -363,8 +363,6 @@ Payment_Label:BEGIN
   SET var_c_payment_cnt := var_c_payment_cnt + 1;
 
   IF (var_c_credit = 'BC') THEN
-    SELECT C_DATA INTO var_c_data FROM customer
-    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;  
 
     UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment, 
     C_PAYMENT_CNT = var_c_payment_cnt, C_DATA = var_c_data 
