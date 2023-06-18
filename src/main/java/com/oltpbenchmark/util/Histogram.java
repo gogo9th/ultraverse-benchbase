@@ -50,7 +50,7 @@ public class Histogram<X extends Comparable<X>> implements JSONSerializable {
     }
 
     protected final SortedMap<X, Integer> histogram = new TreeMap<>();
-    protected int num_samples = 0;
+    protected long num_samples = 0;
     private transient boolean dirty = false;
 
     /**
@@ -226,10 +226,13 @@ public class Histogram<X extends Comparable<X>> implements JSONSerializable {
      *
      * @return
      */
-    public int getSampleCount() {
+    public long getSampleCount() {
         return (this.num_samples);
     }
 
+    public int getSampleIntegerCount() {
+        return (new Long(this.num_samples).intValue());
+    }
     /**
      * Get the number of unique values entered into the histogram
      *

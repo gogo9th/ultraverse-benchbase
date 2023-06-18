@@ -526,7 +526,7 @@ public class SEATSProfile {
         Integer cnt = this.getCustomerIdCount(airport_id);
         if (cnt != null) {
             int base_id = this.rng.nextInt(cnt);
-            return (new CustomerId(base_id, airport_id));
+            return (new CustomerId(base_id, airport_id, this.airport_max_customer_id.getSampleCount(), this.airport_max_customer_id.getValueCount()));
         }
         return (null);
     }
@@ -537,7 +537,7 @@ public class SEATSProfile {
      * @return
      */
     public CustomerId getRandomCustomerId() {
-        int num_airports = this.airport_max_customer_id.getValueCount();
+        long num_airports = this.airport_max_customer_id.getValueCount();
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("Selecting a random airport with customers [numAirports=%d]", num_airports));
         }

@@ -438,7 +438,7 @@ public class SEATSLoader extends Loader<SEATSBenchmark> {
                     // to get the distribution of where Customers are located
                     hist = new Histogram<>();
                     for (Entry<String, Histogram<String>> e : m.entrySet()) {
-                        hist.put(e.getKey(), e.getValue().getSampleCount());
+                        hist.put(e.getKey(), e.getValue().getSampleIntegerCount());
                     }
 
                     // All other histograms are just serialized and can be
@@ -884,10 +884,12 @@ public class SEATSLoader extends Loader<SEATSBenchmark> {
         private final RandomDistribution.Flat randBalance;
         private String airport_code = null;
         private CustomerId last_id = null;
-
+        private long num_customers;
+        private int num_airports;
         public CustomerIterable(Table catalog_tbl, long total) {
             super(catalog_tbl, total, new int[]{0, 1, 2, 3});
-
+            this.num_customers = total;
+            this.num_airports = SEATSLoader.this.profile.airport_histograms.size();
             // Use the flights per airport histogram to select where people are
             // located
             Histogram<String> histogram = SEATSLoader.this.profile.getHistogram(SEATSConstants.HISTOGRAM_FLIGHTS_PER_AIRPORT);
@@ -914,7 +916,7 @@ public class SEATSLoader extends Loader<SEATSBenchmark> {
                         airport_id = SEATSLoader.this.profile.getAirportId(this.airport_code);
                     }
                     int next_customer_id = SEATSLoader.this.profile.incrementAirportCustomerCount(airport_id);
-                    this.last_id = new CustomerId(next_customer_id, airport_id);
+                    this.last_id = new CustomerId(next_customer_id, airport_id, this.num_customers, this.num_airports);
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("NEW CUSTOMER: {} / {}", this.last_id.encode(), this.last_id);
                     }
@@ -972,7 +974,6 @@ public class SEATSLoader extends Loader<SEATSBenchmark> {
 
         public FrequentFlyerIterable(Table catalog_tbl, long num_customers) {
             super(catalog_tbl, num_customers, new int[]{0, 1, 2});
-
             this.customer_id_iterator = new CustomerIdIterable(SEATSLoader.this.profile.airport_max_customer_id).iterator();
             this.last_customer_id = this.customer_id_iterator.next();
 
@@ -1351,7 +1352,7 @@ public class SEATSLoader extends Loader<SEATSBenchmark> {
                         this.populate(date);
 
                         // Generate a composite FlightId
-                        this.flight_id = new FlightId(this.airline_id, SEATSLoader.this.profile.getAirportId(this.depart_airport), SEATSLoader.this.profile.getAirportId(this.arrive_airport), this.start_date, this.depart_time);
+                        this.flight_id = new FlightId(this.airline_id, SEATSLoader.this.profile.getAirportId(this.depart_airport), SEATSLoader.this.profile.getAirportId(this.arrive_airport), this.start_date, this.depart_time, SEATSLoader.this.profile.airport_histograms.size());
                         if (!this.todays_flights.contains(this.flight_id)) {
                             break;
                         }

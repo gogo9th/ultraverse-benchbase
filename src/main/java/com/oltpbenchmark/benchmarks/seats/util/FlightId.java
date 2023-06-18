@@ -51,6 +51,8 @@ public class FlightId extends CompositeId implements Comparable<FlightId> {
      */
     private long depart_date;
 
+    private int depart_date_digits = 6;
+    private int airport_digits;
 
     /**
      * Constructor
@@ -61,11 +63,13 @@ public class FlightId extends CompositeId implements Comparable<FlightId> {
      * @param benchmark_start   - the base date of when the benchmark data starts (including past days)
      * @param flight_date       - when departure date of the flight
      */
-    public FlightId(long airline_id, long depart_airport_id, long arrive_airport_id, Timestamp benchmark_start, Timestamp flight_date) {
+    public FlightId(long airline_id, long depart_airport_id, long arrive_airport_id, Timestamp benchmark_start, Timestamp flight_date, Integer num_airports) {
         this.airline_id = airline_id;
         this.depart_airport_id = depart_airport_id;
         this.arrive_airport_id = arrive_airport_id;
         this.depart_date = FlightId.calculateFlightDate(benchmark_start, flight_date);
+
+        this.airport_digits = num_airports.toString().length();
 
     }
 
@@ -84,16 +88,57 @@ public class FlightId extends CompositeId implements Comparable<FlightId> {
 
     @Override
     public String encode() {
-        return (this.encode(COMPOSITE_BITS));
+        String airline_id_str = new Long(this.airline_id).toString();
+        String depart_airport_id_str = "";
+        String arrive_airport_id_str = "";
+        String depart_date_str = "";
+
+        int depart_airport_id_length = new Long(this.depart_airport_id).toString().length();
+        int arrive_airport_id_length = new Long(this.arrive_airport_id).toString().length();
+        int depart_date_length = new Long(this.depart_date).toString().length();
+        
+        for (int i = 0; i < this.airport_digits - depart_airport_id_length; i++)
+            depart_airport_id_str += "0";
+        for (int i = 0; i < this.airport_digits - arrive_airport_id_length; i++)
+            arrive_airport_id_str += "0";
+        for (int i = 0; i < this.depart_date_digits - depart_date_length; i++)
+            depart_date_str += "0";
+
+        depart_airport_id_str += new Long(this.depart_airport_id).toString();
+        arrive_airport_id_str += new Long(this.arrive_airport_id).toString();
+        depart_date_str += new Long(this.depart_date).toString();
+        
+        return depart_airport_id_str.concat(arrive_airport_id_str).concat(depart_date_str).concat(airline_id_str);
+
+        /* HACK simpler encoding 
+        return (this.encode(COMPOSITE_BITS));*/
     }
 
     @Override
     public void decode(String composite_id) {
+        String airline_id_str = "";
+        String depart_airport_id_str = "";
+        String arrive_airport_id_str = "";
+        String depart_date_str = "";
+        int index = 0;
+        for (int i = 0; i < airport_digits; i++, index++)
+            depart_airport_id_str += composite_id.charAt(index);
+        for (int i = 0; i < airport_digits; i++, index++)
+            arrive_airport_id_str += composite_id.charAt(index);
+        for (int i = 0; i < depart_date_digits; i++, index++)
+            depart_date_str += composite_id.charAt(index);
+        airline_id_str = composite_id.substring(index);
+        
+        this.airline_id = Long.parseLong(airline_id_str);
+        this.depart_airport_id = Long.parseLong(depart_airport_id_str);
+        this.arrive_airport_id = Long.parseLong(arrive_airport_id_str);
+        this.depart_date = Long.parseLong(depart_date_str);
+        /* HACK 
         String[] values = super.decode(composite_id, COMPOSITE_BITS);
         this.airline_id = Long.parseLong(values[0]);
         this.depart_airport_id = Long.parseLong(values[1]);
         this.arrive_airport_id = Long.parseLong(values[2]);
-        this.depart_date = Long.parseLong(values[3]);
+        this.depart_date = Long.parseLong(values[3]);*/
     }
 
     @Override

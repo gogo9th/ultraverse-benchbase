@@ -29,10 +29,14 @@ public class CustomerIdIterable implements Iterable<CustomerId> {
     private Long last_airport_id = null;
     private int last_id = -1;
     private long last_max_id = -1;
+    private int max_airport_id;
+    private long max_customer_id;
 
     public CustomerIdIterable(Histogram<Long> airport_max_customer_id) {
         this.airport_max_customer_id = airport_max_customer_id;
         this.airport_ids.addAll(airport_max_customer_id.values());
+        this.max_airport_id = airport_max_customer_id.getValueCount();
+        this.max_customer_id = airport_max_customer_id.getSampleCount();
     }
 
     @Override
@@ -50,7 +54,7 @@ public class CustomerIdIterable implements Iterable<CustomerId> {
                     last_id = 0;
                     last_max_id = airport_max_customer_id.get(last_airport_id);
                 }
-                CustomerId next_id = new CustomerId(last_id, last_airport_id);
+                CustomerId next_id = new CustomerId(last_id, last_airport_id, max_customer_id, max_airport_id);
                 if (++last_id == last_max_id) {
                     last_airport_id = null;
                 }
