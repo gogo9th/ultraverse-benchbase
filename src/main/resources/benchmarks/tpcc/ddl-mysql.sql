@@ -294,7 +294,7 @@ CREATE PROCEDURE Payment(IN var_w_id INT,
 Payment_Label:BEGIN
 
   DECLARE var_d_id INT;
-  DECLARE var_paymentAmount DECIMAL(6,2);
+  DECLARE var_paymentAmount DECIMAL(8,2);
   DECLARE var_w_name VARCHAR(10) DEFAULT NULL;
   DECLARE var_d_name VARCHAR(10) DEFAULT NULL;
   DECLARE var_x INT;
@@ -398,7 +398,7 @@ Delivery_Label:BEGIN
   DECLARE var_no_o_id INT;
   DECLARE var_o_c_id INT;
   DECLARE var_o_carrier_id INT;
-  DECLARE var_ol_total DECIMAL(6, 2);  
+  DECLARE var_ol_total DECIMAL(8, 2);  
 
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Delivery');
 
