@@ -378,10 +378,11 @@ public class SEATSProfile {
     private void loadCachedFlights(List<Object[]> vt) {
         int limit = 1;
         Iterator<Object[]> iterator = vt.iterator();
+        int num_airports = this.airport_max_customer_id.getValueCount();
         while (iterator.hasNext() && limit++ < SEATSConstants.CACHE_LIMIT_FLIGHT_IDS) {
             Object[] row = iterator.next();
             String f_id = SQLUtil.getString(row[0]);
-            FlightId flight_id = new FlightId(f_id);
+            FlightId flight_id = new FlightId(f_id, num_airports);
             this.cached_flight_ids.add(flight_id);
         }
         if (LOG.isDebugEnabled()) {

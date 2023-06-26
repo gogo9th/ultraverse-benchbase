@@ -322,7 +322,7 @@ UpdateCustomer_Label:BEGIN
 
    UPDATE customer2 SET c_iattr00 = var_attr0, c_iattr01 = var_attr1 WHERE c_id = var_c_id;
 
-   UPDATE frequent_flyer SET ff_iattr00 = var_attr0, ff_iattr01 = var_attr1 WHERE ff_c_id = var_c_id AND ff_al_id IN (SELECT ff_al_id FROM frequent_flyer WHERE ff_c_id = var_c_id);
+   UPDATE frequent_flyer SET ff_iattr00 = var_attr0, ff_iattr01 = var_attr1 WHERE ff_c_id = var_c_id AND ff_al_id IN (SELECT ff_al_id FROM (SELECT ff_al_id FROM frequent_flyer WHERE ff_c_id = var_c_id) AS frequent_flyer_alias);
 
 END//
 DELIMITER ;

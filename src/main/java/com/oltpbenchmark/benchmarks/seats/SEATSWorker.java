@@ -260,6 +260,7 @@ public class SEATSWorker extends Worker<SEATSBenchmark> {
     //public final static Map<String, Map<Long, Boolean>> aliasClusterKey_f_id = new HashMap<>();
     //public final static Map<String, Integer> flights = new HashMap<>();
     //public final static Map<String, Set<String>> cluster = new HashMap<>();
+	private int num_airport;
     protected void initialize() {
         try {
             this.profile.loadProfile(this);
@@ -269,7 +270,7 @@ public class SEATSWorker extends Worker<SEATSBenchmark> {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Airport Max Customer Id:\n{}", this.profile.airport_max_customer_id);
         }
-
+		num_airport = this.profile.airport_histograms.size();
         // Make sure we have the information we need in the BenchmarkProfile
         String error_msg = null;
         if (this.profile.getFlightIdCount() == 0) {
@@ -634,7 +635,7 @@ public class SEATSWorker extends Worker<SEATSBenchmark> {
             // Convert the data into a FlightIds that other transactions can use
             int ctr = 0;
             for (Object[] row : results) {
-                FlightId flight_id = new FlightId((String) row[0]);
+                FlightId flight_id = new FlightId((String) row[0], num_airport);
 
                 boolean added = profile.addFlightId(flight_id);
                 if (added) {

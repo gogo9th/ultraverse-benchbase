@@ -16,19 +16,19 @@
  */
 
 
-package com.oltpbenchmark.benchmarks.tatp.procedures;
+package com.oltpbenchmark.benchmarks.astore.procedures;
 
 import com.oltpbenchmark.api.Procedure;
 import com.oltpbenchmark.api.SQLStmt;
-import com.oltpbenchmark.benchmarks.tatp.TATPConstants;
+import com.oltpbenchmark.benchmarks.astore.ASTOREConstants;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class UpdateLocation extends Procedure {
-
+public class ProfileIdEdit extends Procedure {
+/*
     public final SQLStmt getSubscriber = new SQLStmt(
             "SELECT s_id INTO @s_id FROM " + TATPConstants.TABLENAME_SUBSCRIBER + " WHERE sub_nbr = ?"
     );
@@ -36,7 +36,7 @@ public class UpdateLocation extends Procedure {
     public final SQLStmt updateSubscriber = new SQLStmt(
             "UPDATE " + TATPConstants.TABLENAME_SUBSCRIBER + " SET vlr_location = ? WHERE s_id = @s_id"
     );
-
+*/
     public final SQLStmt UpdateLocation_Procedure = new SQLStmt(
             "CALL UpdateLocation(?, ?)"
     );

@@ -79,3 +79,60 @@ CREATE INDEX idx_cf ON call_forwarding (s_id);
 
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+DROP PROCEDURE IF EXISTS DeleteCallForwarding;
+DELIMITER //
+CREATE PROCEDURE DeleteCallForwarding(IN var_sub_nbr VARCHAR(15),
+                                IN var_sf_type TINYINT,
+                                IN var_start_time TINYINT)
+            DeleteCallForwarding_Label:BEGIN
+                DECLARE var_s_id INT DEFAULT -1;
+                SELECT s_id INTO var_s_id FROM subscriber WHERE sub_nbr = var_sub_nbr;
+                DELETE FROM call_forwarding WHERE s_id = var_s_id AND sf_type = var_sf_type AND start_time = var_start_time;
+END//
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS InsertCallForwarding;
+DELIMITER //
+CREATE PROCEDURE InsertCallForwarding(IN var_sub_nbr VARCHAR(15),
+                                IN var_sf_type TINYINT,
+                                IN var_start_time TINYINT,
+                                IN var_end_time TINYINT,
+                                IN var_numberx VARCHAR(15))
+            InsertCallForwarding_Label:BEGIN
+                DECLARE var_s_id INT DEFAULT -1;
+                SELECT s_id INTO var_s_id FROM subscriber WHERE sub_nbr = var_sub_nbr;
+                SELECT sf_type FROM special_facility WHERE s_id = var_s_id;
+                INSERT INTO call_forwarding VALUES (var_s_id, var_sf_type, var_start_time, var_end_time, var_numberx);
+END//
+DELIMITER ;
+
+
+
+DROP PROCEDURE IF EXISTS UpdateLocation;
+DELIMITER //
+CREATE PROCEDURE UpdateLocation(IN loc INT,
+                                IN var_sub_nbr VARCHAR(15))
+            UpdateLocation_Label:BEGIN
+                DECLARE var_s_id INT DEFAULT -1;
+                SELECT s_id INTO var_s_id FROM subscriber WHERE sub_nbr = var_sub_nbr;
+                UPDATE subscriber SET vlr_location = loc WHERE s_id = var_s_id;
+END//
+DELIMITER ;
+
+
+
+DROP PROCEDURE IF EXISTS UpdateSubscriberData;
+DELIMITER //
+CREATE PROCEDURE UpdateSubscriberData(IN var_s_id INT,
+                                IN var_bit_1 TINYINT,
+                                IN var_data_a SMALLINT,
+                                IN var_sf_type TINYINT)
+            UpdateSubcriberData_Label:BEGIN
+                DECLARE var_s_id INT DEFAULT -1;
+                UPDATE subscriber SET bit_1 = var_bit_1 WHERE s_id = var_s_id;
+                UPDATE special_facility SET data_a = var_data_a WHERE s_id = var_s_id AND sf_type = var_sf_type;
+END//
+DELIMITER ;

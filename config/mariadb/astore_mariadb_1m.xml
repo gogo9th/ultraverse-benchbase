@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<parameters>
+
+    <!-- Connection details -->
+    <type>MARIADB</type>
+    <driver>org.mariadb.jdbc.Driver</driver>
+    <url>jdbc:mariadb://localhost:3306/benchbase?useServerPrepStmts&amp;allowPublicKeyRetrieval=true&amp;useSSL=false</url>
+    <username>admin</username>
+    <password>password</password>
+    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <batchsize>128</batchsize>
+    <querycount>200000</querycount>
+
+    <!-- Scalefactor increases the number of subscribers -->
+    <scalefactor>1</scalefactor>
+
+    <!-- The workload -->
+    <terminals>1</terminals>
+    <works>
+        <work>
+            <time>2000000000</time>
+            <rate>1000000</rate>
+            <weights>5, 1, 5, 5, 5, 10, 40, 30, 20</weights>
+        </work>
+    </works>
+
+    <!-- Twitter Procedures declaration -->
+    <transactiontypes>
+        <transactiontype>
+            <name>ProfileIdEdit</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileIdChangePassword</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileAddressAdd</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileAddressDelete</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileAddressEdit</name>
+        </transactiontype>
+        <transactiontype>
+            <name>RoutesSubscribe</name>
+        </transactiontype>
+        <transactiontype>
+            <name>CheckoutDeliveryNew</name>
+        </transactiontype>
+        <transactiontype>
+            <name>CheckoutOrder</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ContactUs</name>
+        </transactiontype>
+    </transactiontypes>
+</parameters>

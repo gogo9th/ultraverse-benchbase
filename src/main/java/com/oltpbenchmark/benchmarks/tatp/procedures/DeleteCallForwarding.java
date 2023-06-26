@@ -38,9 +38,20 @@ public class DeleteCallForwarding extends Procedure {
                     " WHERE s_id = @s_id AND sf_type = ? AND start_time = ?"
     );
 
+
+    public final SQLStmt DeleteCallForwarding_Procedure = new SQLStmt(
+            "CALL DeleteCallForwarding(?, ?, ?)"
+    );
+
+
+
     public long run(Connection conn, String sub_nbr, byte sf_type, byte start_time) throws SQLException {
         //long s_id = -1;
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, DeleteCallForwarding_Procedure, sub_nbr, sf_type, start_time)) {
+            preparedStatement.execute();
+        }
 
+/*
         try {
             PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber);
             stmt.setString(1, sub_nbr);
@@ -69,6 +80,8 @@ public class DeleteCallForwarding extends Procedure {
             System.err.printf("WARN: %s\n", e.getMessage());
         }
 
-        return (rows_updated);
+*/
+	return 0;
+        //return (rows_updated);
     }
 }

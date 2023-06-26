@@ -70,7 +70,6 @@ public class FlightId extends CompositeId implements Comparable<FlightId> {
         this.depart_date = FlightId.calculateFlightDate(benchmark_start, flight_date);
 
         this.airport_digits = num_airports.toString().length();
-
     }
 
     /**
@@ -78,7 +77,8 @@ public class FlightId extends CompositeId implements Comparable<FlightId> {
      *
      * @param composite_id
      */
-    public FlightId(String composite_id) {
+    public FlightId(String composite_id, Integer num_airports) {
+        this.airport_digits = num_airports.toString().length();
         this.set(composite_id);
     }
 

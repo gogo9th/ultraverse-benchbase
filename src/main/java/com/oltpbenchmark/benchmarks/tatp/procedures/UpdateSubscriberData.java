@@ -36,7 +36,17 @@ public class UpdateSubscriberData extends Procedure {
             "UPDATE " + TATPConstants.TABLENAME_SPECIAL_FACILITY + " SET data_a = ? WHERE s_id = ? AND sf_type = ?"
     );
 
+    public final SQLStmt UpdateSubscriberData_Procedure = new SQLStmt(
+            "CALL UpdateSubscriberData(?, ?, ?, ?)"
+    );
+
+
     public long run(Connection conn, long s_id, byte bit_1, short data_a, byte sf_type) throws SQLException {
+
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, UpdateSubscriberData_Procedure, s_id, bit_1, data_a, sf_type)) {
+            preparedStatement.execute();
+        }
+/*
         int updated;
 
         try {
@@ -66,6 +76,7 @@ public class UpdateSubscriberData extends Procedure {
             System.err.printf("WARN: %s\n", e.getMessage());
         }
 
+*/
         return 0;
     }
 }

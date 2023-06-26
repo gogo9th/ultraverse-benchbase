@@ -41,9 +41,18 @@ public class InsertCallForwarding extends Procedure {
             "INSERT INTO " + TATPConstants.TABLENAME_CALL_FORWARDING + " VALUES (@s_id, ?, ?, ?, ?)"
     );
 
+    public final SQLStmt InsertCallForwarding_Procedure = new SQLStmt(
+            "CALL InsertCallForwarding(?, ?, ?, ?, ?)"
+    );
+
     public long run(Connection conn, String sub_nbr, byte sf_type, byte start_time, byte end_time, String numberx) throws SQLException {
         //long s_id = -1;
-
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, InsertCallForwarding_Procedure, sub_nbr, sf_type, start_time, end_time, numberx)) {
+            preparedStatement.execute();
+        } catch(Exception e) {  
+		System.out.println("[Failed] CALL InsertCallForwarding(" + sub_nbr + ", " + sf_type + ", " + start_time + ", " + end_time + ", " + numberx + ")... IGNORE" );
+		}
+/*
         try {
             PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber);
             stmt.setString(1, sub_nbr);
@@ -85,6 +94,8 @@ public class InsertCallForwarding extends Procedure {
             System.err.printf("WARN: %s\n", e.getMessage());
         }
 
-        return (rows_updated);
+*/
+		return 0;
+        //return (rows_updated);
     }
 }
