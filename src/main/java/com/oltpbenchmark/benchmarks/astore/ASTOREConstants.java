@@ -20,11 +20,11 @@ package com.oltpbenchmark.benchmarks.astore;
 
 public abstract class ASTOREConstants {
 
-    public static final long DEFAULT_NUM_CATEGORY = 1000;
-    public static final long DEFAULT_NUM_USER = 10000;
-    public static final long DEFAULT_NUM_ADDRESS = 10000;
-    public static final long DEFAULT_NUM_PRODUCT = 1000;
-    public static final long DEFAULT_NUM_ORDER = 10000;
+    public static final int DEFAULT_NUM_CATEGORY = 1000;
+    public static final int DEFAULT_NUM_USER = 10000;
+    public static final int DEFAULT_NUM_ADDRESS = 10000;
+    public static final int DEFAULT_NUM_PRODUCT = 1000;
+    public static final int DEFAULT_NUM_ORDER = 10000;
 
     //public static final int SUB_NBR_PADDING_SIZE = 15;
 

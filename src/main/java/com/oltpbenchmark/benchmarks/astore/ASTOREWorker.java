@@ -48,120 +48,63 @@ public class ASTOREWorker extends Worker<ASTOREBenchmark> {
          * @param subscriberSize
          * @return
          */
-        void invoke(Connection conn, Procedure proc, long categorySize, long userSize, long addressSize, long productSize, long orderSize, WorkloadConfiguration w) throws SQLException;
+        void invoke(Connection conn, Procedure proc, int categorySize, int userSize, int addressSize, int productSize, int orderSize, WorkloadConfiguration w) throws SQLException;
     }
 
     /**
      * Set of transactions structs with their appropriate parameters
      */
     public enum Transaction {
-/*
         ProfileIdEdit(new TransactionInvoker<ProfileIdEdit>() {
-            public void invoke(Connection conn, Procedure proc, long categorySize, long userSize, long addressSize, long productSize, long orderSize, WorkloadConfiguration configuration) throws SQLException {
+            public void invoke(Connection conn, Procedure proc, int categorySize, int userSize, int addressSize, int productSize, int orderSize, WorkloadConfiguration configuration) throws SQLException {
                 //long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
                 configuration.updateQueryCount(1);
                 configuration.updateTransactionCount(1);
+				String req_body_password = "";
+				String req_user_Password = "";
+				String req_body_fullName = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_email = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_streetAddress  = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_postcode = ASTOREUtil.RandomStringNumber(5, 5);
+				String req_body_city = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_country  = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_phone  = ASTOREUtil.RandomStringNumber(10, 10);
+				Integer req_user_UserID = ASTOREUtil.RandomInt(1, userSize);
                    ((ProfileIdEdit) proc).run(
-									conn, 
-						 );
+									conn, req_body_password, req_user_Password, req_body_fullName, req_body_email, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone, req_user_UserID);
                }
-            }
         }),
-        GetAccessData(new TransactionInvoker<GetAccessData>() {
-            public void invoke(Connection conn, Procedure proc, long subscriberSize, WorkloadConfiguration configuration) throws SQLException {
-                long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
+        ProfileIdChangePassword(new TransactionInvoker<ProfileIdChangePassword>() {
+            public void invoke(Connection conn, Procedure proc, int categorySize, int userSize, int addressSize, int productSize, int orderSize, WorkloadConfiguration configuration) throws SQLException {
+                //long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
                 configuration.updateQueryCount(1);
                 configuration.updateTransactionCount(1);
-                ((GetAccessData) proc).run(
-                        conn,
-                        s_id, // s_id
-                        ASTOREUtil.number(1, 4).byteValue() // ai_type
-                );
-            }
+				String req_body_password = "";
+				String req_user_Password = "";
+				String req_body_newPassword = ASTOREUtil.RandomStringLetter(5, 5);
+				Integer req_user_UserID = ASTOREUtil.RandomInt(1, userSize);
+                   ((ProfileIdChangePassword) proc).run(
+									conn, req_body_password, req_user_Password, req_body_newPassword, req_user_UserID);
+               }
         }),
-        GetNewDestination(new TransactionInvoker<GetNewDestination>() {
-            public void invoke(Connection conn, Procedure proc, long subscriberSize, WorkloadConfiguration configuration) throws SQLException {
-                long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
+		ProfileAddressAdd(new TransactionInvoker<ProfileAddressAdd>() {
+            public void invoke(Connection conn, Procedure proc, int categorySize, int userSize, int addressSize, int productSize, int orderSize, WorkloadConfiguration configuration) throws SQLException {
+                //long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
                 configuration.updateQueryCount(1);
                 configuration.updateTransactionCount(1);
-                ((GetNewDestination) proc).run(
-                        conn,
-                        s_id, // s_id
-                        ASTOREUtil.number(1, 4).byteValue(), // sf_type
-                        (byte) (8 * ASTOREUtil.number(0, 2)), // start_time
-                        ASTOREUtil.number(1, 24).byteValue() // end_time
-                );
-            }
-        }),
-        GetSubscriberData(new TransactionInvoker<GetSubscriberData>() {
-            public void invoke(Connection conn, Procedure proc, long subscriberSize, WorkloadConfiguration configuration) throws SQLException {
-                long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
-                
-                configuration.updateQueryCount(1);
-                configuration.updateTransactionCount(1);
-                ((GetSubscriberData) proc).run(
-                        conn,
-                        s_id // s_id
-                );
-            }
-        }),
-        InsertCallForwarding(new TransactionInvoker<InsertCallForwarding>() {
-            public void invoke(Connection conn, Procedure proc, long subscriberSize, WorkloadConfiguration configuration) throws SQLException {
-                long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
-                
-                configuration.updateQueryCount(3);
-                if (configuration.statedb == 0 || configuration.statedb == 2 && (s_id == s_id_init || s_id_init == -1))
-					{	  if (s_id_init == -1) s_id_init = s_id; 
-                   configuration.executedQueryCount += 3;
-                   configuration.executedTransactionCount += 1;
-                   ((InsertCallForwarding) proc).run(
-									conn,
-									ASTOREUtil.padWithZero(s_id), // sub_nbr
-									ASTOREUtil.number(1, 4).byteValue(), // sf_type
-									(byte) (8 * ASTOREUtil.number(0, 2)), // start_time
-									ASTOREUtil.number(1, 24).byteValue(), // end_time
-									ASTOREUtil.padWithZero(s_id) // numberx
-						 );
+				String req_body_password = "";
+				String req_user_Password = "";
+				String req_body_fullName = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_streetAddress  = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_postcode = ASTOREUtil.RandomStringNumber(5, 5);
+				String req_body_city = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_country  = ASTOREUtil.RandomStringLetter(5, 5);
+				String req_body_phone  = ASTOREUtil.RandomStringNumber(10, 10);
+				Integer req_user_UserID = ASTOREUtil.RandomInt(1, userSize);
+                   ((ProfileAddressAdd) proc).run(
+									conn, req_body_password, req_user_Password, req_body_fullName, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone, req_user_UserID);
                }
-            }
         }),
-        UpdateLocation(new TransactionInvoker<UpdateLocation>() {
-            public void invoke(Connection conn, Procedure proc, long subscriberSize, WorkloadConfiguration configuration) throws SQLException {
-                long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
-                configuration.updateQueryCount(2);
-                if (configuration.statedb == 0 || configuration.statedb == 1 && (s_id == 1 || s_id_init == -1))
-					{	 if (s_id_init == -1) s_id_init = s_id;
-                   configuration.executedQueryCount += 2;
-                   configuration.executedTransactionCount += 1;
-                   ((UpdateLocation) proc).run(
-									conn,
-									ASTOREUtil.number(0, Integer.MAX_VALUE).intValue(), // vlr_location
-									ASTOREUtil.padWithZero(s_id) // sub_nbr
-						 );
-               }
-            }
-        }),
-        UpdateSubscriberData(new TransactionInvoker<UpdateSubscriberData>() {
-            public void invoke(Connection conn, Procedure proc, long subscriberSize, WorkloadConfiguration configuration) throws SQLException {
-                long s_id = ASTOREUtil.getSubscriberId(subscriberSize);
-                configuration.updateQueryCount(1);
-                configuration.updateTransactionCount(1);
-                if (configuration.statedb == 0)
-					{	 
-                   configuration.executedQueryCount += 2;
-                   configuration.executedTransactionCount += 1;
-							((UpdateSubscriberData) proc).run(
-									conn,
-									s_id, // s_id
-									ASTOREUtil.number(0, 1).byteValue(), // bit_1
-									ASTOREUtil.number(0, 255).shortValue(), // data_a
-									ASTOREUtil.number(1, 4).byteValue() // sf_type
-						 );
-               }
-            }
-        }),
-
-*/
         ; // END LIST OF STORED PROCEDURES
 
         Transaction(TransactionInvoker<? extends Procedure> ag) {
@@ -184,24 +127,24 @@ public class ASTOREWorker extends Worker<ASTOREBenchmark> {
             return (Transaction.name_lookup.get(name.toUpperCase()));
         }
 
-        public void invoke(Connection conn, Procedure proc, long categorySize, long userSize, long addressSize, long productSize, long orderSize, WorkloadConfiguration c) throws SQLException {
+        public void invoke(Connection conn, Procedure proc, int categorySize, int userSize, int addressSize, int productSize, int orderSize, WorkloadConfiguration c) throws SQLException {
             this.generator.invoke(conn, proc, categorySize, userSize, addressSize, productSize, orderSize, c);
         }
     }
 
-    private final long categorySize;
-    private final long userSize;
-    private final long addressSize;
-    private final long productSize;
-    private final long orderSize;
+    private final int categorySize;
+    private final int userSize;
+    private final int addressSize;
+    private final int productSize;
+    private final int orderSize;
 
     public ASTOREWorker(ASTOREBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
-        this.categorySize = Math.round(ASTOREConstants.DEFAULT_NUM_CATEGORY * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
-        this.userSize = Math.round(ASTOREConstants.DEFAULT_NUM_USER * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
-        this.addressSize = Math.round(ASTOREConstants.DEFAULT_NUM_ADDRESS * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
-        this.productSize = Math.round(ASTOREConstants.DEFAULT_NUM_PRODUCT * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
-        this.orderSize = Math.round(ASTOREConstants.DEFAULT_NUM_ORDER * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
+        this.categorySize = (int)Math.round(ASTOREConstants.DEFAULT_NUM_CATEGORY * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
+        this.userSize = (int)Math.round(ASTOREConstants.DEFAULT_NUM_USER * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
+        this.addressSize = (int)Math.round(ASTOREConstants.DEFAULT_NUM_ADDRESS * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
+        this.productSize = (int)Math.round(ASTOREConstants.DEFAULT_NUM_PRODUCT * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
+        this.orderSize = (int)Math.round(ASTOREConstants.DEFAULT_NUM_ORDER * benchmarkModule.getWorkloadConfiguration().getScaleFactor());
     }
 
     @Override

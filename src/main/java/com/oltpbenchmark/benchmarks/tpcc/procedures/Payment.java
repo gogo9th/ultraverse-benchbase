@@ -129,8 +129,20 @@ public class Payment extends TPCCProcedure {
         configuration.updateQueryCount(1);
         configuration.executedQueryCount += 1;
 
+
+		int c_id = TPCCUtil.getCustomerID(gen);
+		int d_id = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
+		int customerDistrictID = d_id;
+		int customerWarehouseID = w_id;
+		double paymentAmount = (double)TPCCUtil.randomNumber(100, 500000, gen) / 100.0;
+		if (TPCCUtil.randomNumber(1, 100, gen) > 85)
+		{	customerDistrictID = TPCCUtil.randomNumber(1, TPCCConfig.configDistPerWhse, gen);
+			while (customerWarehouseID == w_id && numWarehouses != 1)
+				customerWarehouseID = TPCCUtil.randomNumber(1, numWarehouses, gen);
+		}
+
 //System.out.println("CALL Payment(" + w_id + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ", " + TPCCConfig.configDistPerWhse + ", " + TPCCConfig.configCustPerDist + ")"); 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Payment_Procedure, w_id, numWarehouses, terminalDistrictLowerID, terminalDistrictUpperID, TPCCConfig.configDistPerWhse, TPCCConfig.configCustPerDist)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Payment_Procedure, w_id, d_id, customerDistrictID, customerWarehouseID, c_id, paymentAmount)) {
             preparedStatement.execute();
         }
 

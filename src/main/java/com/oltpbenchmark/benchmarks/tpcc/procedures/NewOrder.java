@@ -94,14 +94,21 @@ public class NewOrder extends TPCCProcedure {
 
 
     public final SQLStmt NewOrder_Procedure = new SQLStmt(
-            "CALL NewOrder (?, ?, ?, ?, ?, ?)");
+            "CALL NewOrder (?, ?, ?, ?, ?)");
 
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
 
 
 //System.out.println("CALL NewOrder(" + terminalWarehouseID + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ", " + TPCCConfig.configItemCount + ", " + TPCCConfig.configCustPerDist + ")");
-
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, numWarehouses, terminalDistrictLowerID, terminalDistrictUpperID, TPCCConfig.configItemCount, TPCCConfig.configCustPerDist)) {
+		int c_id = TPCCUtil.getCustomerID(gen);
+		int d_id = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
+		int o_ol_cnt = TPCCUtil.randomNumber(5, 15, gen);
+		int ol_supply_w_id = terminalWarehouseID;
+		if (TPCCUtil.randomNumber(1, 100, gen) == 1)
+		{	while (ol_supply_w_id == terminalWarehouseID && numWarehouses != 1)
+				ol_supply_w_id = TPCCUtil.randomNumber(1, numWarehouses, gen);
+		}
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, c_id, d_id, o_ol_cnt, ol_supply_w_id)) {
             preparedStatement.execute();
         }
 /*

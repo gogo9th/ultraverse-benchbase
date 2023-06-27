@@ -51,8 +51,8 @@ public abstract class ASTOREUtil {
         return new String(bytes);
     }
 
-    public static Long RandomInt(long minimum, long maximum) {
-        return Math.abs(rand.nextLong()) % (maximum - minimum + 1) + minimum;
+    public static Integer RandomInt(int minimum, int maximum) {
+        return Math.abs(rand.nextInt()) % (maximum - minimum + 1) + minimum;
     }
 
     public static Double RandomDouble(double minimum, double maximum) {

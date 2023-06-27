@@ -186,11 +186,10 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS NewOrder;
 DELIMITER //
 CREATE PROCEDURE NewOrder(IN var_w_id INT,
-                                   IN var_numWarehouses INT,
-                                   IN var_terminalDistrictLowerID INT,
-                                   IN var_terminalDistrictUpperID INT,
-                                   IN var_configItemCount INT,
-                                   IN var_configCustPerDist INT
+                                   IN var_c_id INT,
+                                   IN var_d_id INT,
+                                   IN var_o_ol_cnt INT,
+                                   IN var_ol_supply_w_id INT
                         )
 NewOrder_Label:BEGIN
   DECLARE var_d_id INT;
@@ -198,7 +197,6 @@ NewOrder_Label:BEGIN
   DECLARE var_o_ol_cnt INT;
   DECLARE var_loop_cnt INT DEFAULT 0;
 
-  DECLARE var_ol_supply_w_id INT;
   DECLARE var_i_id INT;
   DECLARE var_ol_quantity INT;
   DECLARE var_s_quantity INT;
@@ -209,10 +207,6 @@ NewOrder_Label:BEGIN
   DECLARE var_i_price DECIMAL(5, 2);
 
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('NewOrder');
-
-  SET var_c_id = (SELECT NonUniformRandom(1023, 259, 1, var_configCustPerDist));
-  SET var_d_id = (SELECT RandomNumber(var_terminalDistrictUpperID, var_terminalDistrictLowerID));
-  SET var_o_ol_cnt = (SELECT RandomNumber(5, 15));
 
   IF ((SELECT COUNT(*) FROM customer
   WHERE C_W_ID = var_w_id AND C_D_ID = var_d_id AND C_ID = var_c_id) < 1) THEN
@@ -238,21 +232,10 @@ NewOrder_Label:BEGIN
   INSERT INTO new_order (NO_O_ID, NO_D_ID, NO_W_ID) VALUES (var_d_next_o_id, var_d_id, var_w_id);
 
   Order_Loop:WHILE (var_loop_cnt < var_o_ol_cnt) DO
-    SET var_i_id = (NonUniformRandom(8191, 7911, 1, var_configItemCount));
+    SET var_i_id = (NonUniformRandom(8191, 7911, 1, 100000));
     SET var_ol_quantity = RandomNumber(1, 10);
 
     SELECT I_PRICE INTO var_i_price FROM item WHERE I_ID = var_i_id;
-
-    IF (RandomNumber(1, 100) > 1) THEN
-      SET var_ol_supply_w_id = var_w_id;
-    ELSE
-      SET var_o_all_local = 0;
-      SET var_ol_supply_w_id = (RandomNumber(1, var_numWarehouses));
-      WHILE (var_numWarehouses > 1 AND var_ol_supply_w_id = var_w_id) DO
-        SET var_ol_supply_w_id = (RandomNumber(1, var_numWarehouses));
-      END WHILE;
-    END IF;
-
     IF (var_ol_supply_w_id = var_w_id) THEN
       SET var_s_remote_cnt_increment = 0;
     ELSE
@@ -285,33 +268,26 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS Payment;
 DELIMITER //
 CREATE PROCEDURE Payment(IN var_w_id INT,
-                                   IN var_numWarehouses INT,
-                                   IN var_terminalDistrictLowerID INT,
-                                   IN var_terminalDistrictUpperID INT,
-                                   IN var_configDistPerWhse INT,
-                                   IN var_configCustPerDist INT
+                                   IN var_d_id INT,
+                                   IN var_customerDistrictID INT,
+                                   IN var_customerWarehouseID INT,
+                                   IN var_c_id INT,
+                                   IN var_paymentAmount DECIMAL(6,2)
                          )
 Payment_Label:BEGIN
 
-  DECLARE var_d_id INT;
-  DECLARE var_paymentAmount DECIMAL(8,2);
   DECLARE var_w_name VARCHAR(10) DEFAULT NULL;
   DECLARE var_d_name VARCHAR(10) DEFAULT NULL;
   DECLARE var_x INT;
-  DECLARE var_customerDistrictID INT;
-  DECLARE var_customerWarehouseID INT;
   DECLARE var_c_balance DECIMAL(12,2);     
   DECLARE var_c_ytd_payment FLOAT;
   DECLARE var_c_payment_cnt INT DEFAULT -1;
   DECLARE var_c_data VARCHAR(500);
-  DECLARE var_c_id INT;
   DECLARE var_c_credit VARCHAR(2);
 
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Payment');
 
-  SET var_d_id = (SELECT RandomNumber(var_terminalDistrictLowerID, var_terminalDistrictUpperID));
 
-  SET var_paymentAmount := RandomNumber(100, 500000) / 100.0;
   SELECT W_NAME INTO var_w_name FROM warehouse WHERE W_ID = var_w_id;
 
   IF (var_w_name IS NULL) THEN
@@ -332,25 +308,6 @@ Payment_Label:BEGIN
   UPDATE district SET D_YTD = D_YTD + var_paymentAmount 
   WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
 
-  SET var_x := RandomNumber(1, 100);
-
-  IF (var_x <= 85) THEN
-    SET var_customerDistrictID := var_d_id;
-  ELSE
-    SET var_customerDistrictID := RandomNumber(1, var_configDistPerWhse);  
-  END IF;
-
-  IF (var_x <= 85) THEN
-    SET var_customerWarehouseID := var_w_id;
-  ELSE
-    SET var_customerWarehouseID := RandomNumber(1, var_numWarehouses);  
-    WHILE (var_customerWarehouseID = var_w_id AND var_numWarehouses > 1) DO
-      SET var_customerWarehouseID := RandomNumber(1, var_numWarehouses);      
-    END WHILE;
-  END IF;
-
-  SET var_c_id = (SELECT NonUniformRandom(1023, 259, 1, var_configCustPerDist));
-
   SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT, C_DATA INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit, var_c_data FROM customer
   WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;
 
@@ -362,7 +319,6 @@ Payment_Label:BEGIN
   SET var_c_balance := var_c_balance - var_paymentAmount;
   SET var_c_ytd_payment := var_c_ytd_payment + var_paymentAmount;
   SET var_c_payment_cnt := var_c_payment_cnt + 1;
-
   IF (var_c_credit = 'BC') THEN
 
     UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment, 
@@ -379,7 +335,7 @@ Payment_Label:BEGIN
   END IF;
   
   INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, CURRENT_TIMESTAMP(), var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
-      
+
 END//
 DELIMITER ;
 
@@ -388,9 +344,9 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS Delivery;
 DELIMITER //
 CREATE PROCEDURE Delivery(IN var_w_id INT,
-                         IN var_numWarehouses INT,
                          IN var_terminalDistrictLowerID INT,
-                         IN var_terminalDistrictUpperID INT
+                         IN var_terminalDistrictUpperID INT,
+                         IN va_o_carrier_id INT
                         )
 Delivery_Label:BEGIN
 

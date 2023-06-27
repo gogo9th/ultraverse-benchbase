@@ -20,7 +20,7 @@
         <work>
             <time>2000000000</time>
             <rate>1000000</rate>
-            <weights>5, 1, 5, 5, 5, 10, 40, 30, 20</weights>
+            <weights>5, 1, 5, <!--5, 5, 10, 40, 30, 20--></weights>
         </work>
     </works>
 
@@ -28,13 +28,14 @@
     <transactiontypes>
         <transactiontype>
             <name>ProfileIdEdit</name>
-        </transactiontype>
+        </transactiontype> 
         <transactiontype>
             <name>ProfileIdChangePassword</name>
         </transactiontype>
         <transactiontype>
             <name>ProfileAddressAdd</name>
         </transactiontype>
+<!--
         <transactiontype>
             <name>ProfileAddressDelete</name>
         </transactiontype>
@@ -53,5 +54,6 @@
         <transactiontype>
             <name>ContactUs</name>
         </transactiontype>
+-->
     </transactiontypes>
 </parameters>

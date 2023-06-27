@@ -27,7 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ProfileIdEdit extends Procedure {
+public class ProfileAddressAdd extends Procedure {
 /*
     public final SQLStmt getSubscriber = new SQLStmt(
             "SELECT s_id INTO @s_id FROM " + TATPConstants.TABLENAME_SUBSCRIBER + " WHERE sub_nbr = ?"
@@ -41,17 +41,17 @@ public class ProfileIdEdit extends Procedure {
             "CALL ProfileIdEdit(?, ?)"
     );
 
-    public final SQLStmt ProfileIdEdit = new SQLStmt(
-            "UPDATE Users SET Fullname = ?, Email = ?, StreetAddress = ?, PostCode = ?, City = ?, Country = ?, Phone = ? WHERE UserID = ?"
+    public final SQLStmt my_query = new SQLStmt(
+            "INSERT INTO Addresses VALUES (null, ?, ?, ?, ?, ?, ?, ?)" 
     );
 
-    public long run(Connection conn, String req_body_password, String req_user_Password, String req_body_fullName, String req_body_email, String req_body_streetAddress, String req_body_postcode, String req_body_city, String req_body_country, String req_body_phone, Integer req_user_userID) throws SQLException {
+    public long run(Connection conn, String req_body_password, String req_user_Password, String req_body_fullName, String req_body_streetAddress, String req_body_postcode, String req_body_city, String req_body_country, String req_body_phone, Integer req_user_userID) throws SQLException {
 
 		/* Password Check */	
 		if (!req_body_password.equals(req_user_Password))
 			return -1;
 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, ProfileIdEdit, req_body_fullName, req_body_email, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone, req_user_userID)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_query,  req_user_userID,  req_body_fullName, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone)) {
             preparedStatement.execute();
         }
 /*
