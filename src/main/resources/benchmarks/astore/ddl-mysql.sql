@@ -171,6 +171,7 @@ CREATE PROCEDURE CheckoutOrder(
                 DECLARE var_3 DECIMAL(10, 2);
                 DECLARE var_inserted_id_0 INT DEFAULT NULL;
                 DECLARE var_json_keys_0 JSON;
+				DROP TEMPORARY TABLE IF EXISTS table_0;
                 CREATE TEMPORARY TABLE IF NOT EXISTS table_0 LIKE Orders;
                 TRUNCATE table_0; 
 

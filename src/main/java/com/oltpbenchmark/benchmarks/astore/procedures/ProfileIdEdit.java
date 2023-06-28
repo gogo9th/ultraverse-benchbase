@@ -37,11 +37,12 @@ public class ProfileIdEdit extends Procedure {
             "UPDATE " + TATPConstants.TABLENAME_SUBSCRIBER + " SET vlr_location = ? WHERE s_id = @s_id"
     );
 */
+/*
     public final SQLStmt my_procedure = new SQLStmt(
             "CALL ProfileIdEdit(?, ?)"
     );
-
-    public final SQLStmt ProfileIdEdit = new SQLStmt(
+*/
+    public final SQLStmt my_query = new SQLStmt(
             "UPDATE Users SET Fullname = ?, Email = ?, StreetAddress = ?, PostCode = ?, City = ?, Country = ?, Phone = ? WHERE UserID = ?"
     );
 
@@ -51,7 +52,7 @@ public class ProfileIdEdit extends Procedure {
 		if (!req_body_password.equals(req_user_Password))
 			return -1;
 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, ProfileIdEdit, req_body_fullName, req_body_email, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone, req_user_userID)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_query, req_body_fullName, req_body_email, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone, req_user_userID)) {
             preparedStatement.execute();
         }
 /*

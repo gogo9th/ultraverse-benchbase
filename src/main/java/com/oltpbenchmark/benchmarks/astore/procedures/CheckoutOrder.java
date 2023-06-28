@@ -27,7 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ProfileAddressAdd extends Procedure {
+public class CheckoutOrder extends Procedure {
 /*
     public final SQLStmt getSubscriber = new SQLStmt(
             "SELECT s_id INTO @s_id FROM " + TATPConstants.TABLENAME_SUBSCRIBER + " WHERE sub_nbr = ?"
@@ -37,23 +37,17 @@ public class ProfileAddressAdd extends Procedure {
             "UPDATE " + TATPConstants.TABLENAME_SUBSCRIBER + " SET vlr_location = ? WHERE s_id = @s_id"
     );
 */
-    /*public final SQLStmt my_procedure = new SQLStmt(
-            "CALL ProfileIdEdit(?, ?)"
-    );*/
 
-    public final SQLStmt my_query = new SQLStmt(
-            "INSERT INTO Addresses VALUES (null, ?, ?, ?, ?, ?, ?, ?)" 
+    public final SQLStmt my_procedure = new SQLStmt(
+            "CALL CheckoutOrder(?, ?, ?, ?, ?, ?, ?)"
     );
 
-    public long run(Connection conn, String req_body_password, String req_user_Password, String req_body_fullName, String req_body_streetAddress, String req_body_postcode, String req_body_city, String req_body_country, String req_body_phone, Integer req_user_userID) throws SQLException {
 
-		/* Password Check */	
-		if (!req_body_password.equals(req_user_Password))
-			return -1;
+    public long run(Connection conn, Integer req_user_userID, Integer req_session_address_addressID, Double req_session_CartSummary_subTotal, Double req_session_cartSummary_discount, Double req_session_cartSummary_shipCost, Double req_session_cartSummary_total, String req_session_cart_json) throws SQLException {
 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_query,  req_user_userID,  req_body_fullName, req_body_streetAddress, req_body_postcode, req_body_city, req_body_country, req_body_phone)) {
-            Integer affected_rows = preparedStatement.executeUpdate();
-			return affected_rows;
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_procedure, req_user_userID, req_session_address_addressID, req_session_CartSummary_subTotal, req_session_cartSummary_discount, req_session_cartSummary_shipCost, req_session_cartSummary_total, req_session_cart_json)) {
+			//System.out.println(req_session_cart_json);
+            return preparedStatement.executeUpdate();
         }
 /*
         try (PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber)) {

@@ -37,11 +37,12 @@ public class ProfileIdChangePassword extends Procedure {
             "UPDATE " + TATPConstants.TABLENAME_SUBSCRIBER + " SET vlr_location = ? WHERE s_id = @s_id"
     );
 */
+/*
     public final SQLStmt my_procedure = new SQLStmt(
             "CALL ProfileIdEdit(?, ?)"
     );
-
-    public final SQLStmt ProfileIdChangePassword = new SQLStmt(
+*/
+    public final SQLStmt my_query = new SQLStmt(
             "UPDATE Users SET Password = ? WHERE UserID = ?"
     );
 
@@ -51,7 +52,7 @@ public class ProfileIdChangePassword extends Procedure {
 		if (!req_body_password.equals(req_user_Password))
 			return -1;
 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, ProfileIdChangePassword, req_body_newPassword,req_user_UserID)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_query, req_body_newPassword,req_user_UserID)) {
             preparedStatement.execute();
         }
 /*

@@ -29,6 +29,11 @@ fi
 
 
 if [ $# -eq 3 ]; then
+
+	echo "drop database if exists $1; create database $1" > temp.sql
+	sudo mysql -ppassword < temp.sql
+	sudo mysql -ppassword benchbase < $2
+
 	java -jar benchbase.jar -b $1 -d /dev/null  -c config/mariadb/$1_$2_$3.xml --create=true
 	ELAPSED_TIME=$(($SECONDS - $START_TIME))
 	echo "$1 $2 $3 'create' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
@@ -44,10 +49,20 @@ if [ $# -eq 3 ]; then
 	echo "$1 $2 $3 'execute' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
 
 elif [ "$4" == "prepare" ]; then
+
+	echo "drop database if exists $1; create database $1" > temp.sql
+	sudo mysql -ppassword < temp.sql
+	sudo mysql -ppassword benchbase < $2
+
 	java -jar benchbase.jar -b $1 -d /dev/null -c config/mariadb/$1_$2_$3.xml --create=true --load=true
 	ELAPSED_TIME=$(($SECONDS - $START_TIME))
 	echo "$1 $2 $3 '$4' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"
 else
+	if [ "$4" == "create" ]; then
+		echo "drop database if exists $1; create database $1" > temp.sql
+		sudo mysql -ppassword < temp.sql
+		sudo mysql -ppassword benchbase < $2
+	fi
 	java -jar benchbase.jar $statedb  -b $1 -c config/mariadb/$1_$2_$3.xml --$4=true
 	ELAPSED_TIME=$(($SECONDS - $START_TIME))
 	echo "$1 $2 $3 '$4' elapsed: $ELAPSED_TIME seconds ($(date '+%Y-%m-%d %H:%M:%S'))"

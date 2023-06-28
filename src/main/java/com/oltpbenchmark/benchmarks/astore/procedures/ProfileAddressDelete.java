@@ -37,22 +37,24 @@ public class ProfileAddressDelete extends Procedure {
             "UPDATE " + TATPConstants.TABLENAME_SUBSCRIBER + " SET vlr_location = ? WHERE s_id = @s_id"
     );
 */
+/*
     public final SQLStmt my_procedure = new SQLStmt(
             "CALL ProfileIdEdit(?, ?)"
     );
-
+*/
     public final SQLStmt my_query = new SQLStmt(
-            "INSERT INTO Addresses VALUES (null, ?, ?, ?, ?, ?, ?, ?)" 
+            "DELETE FROM Addresses WHERE AddressID = ?" 
     );
 
-    public long run(Connection conn, String req_body_password, String req_user_Password, String req_body_fullName, String req_params_add) throws SQLException {
+    public long run(Connection conn, String req_body_password, String req_user_Password, Integer req_params_id) throws SQLException {
 
 		/* Password Check */	
 		if (!req_body_password.equals(req_user_Password))
 			return -1;
 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_query)) {
-            preparedStatement.execute();
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, my_query, req_params_id)) {
+            Integer affected_rows = preparedStatement.executeUpdate();
+			return affected_rows;
         }
 /*
         try (PreparedStatement stmt = this.getPreparedStatement(conn, getSubscriber)) {
@@ -72,6 +74,6 @@ public class ProfileAddressDelete extends Procedure {
         }
 
 */
-        return 0;
+        //return 0;
     }
 }

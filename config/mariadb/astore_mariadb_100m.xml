@@ -19,7 +19,7 @@
     <works>
         <work>
             <time>2000000000</time>
-            <rate>500000</rate>
+            <rate>50000000</rate>
             <weights>5, 1, 5, 5, 5, 10, 40, 30, 20</weights>
         </work>
     </works>
