@@ -217,7 +217,7 @@ NewOrder_Label:BEGIN
     LEAVE NewOrder_Label;
   END IF;
 
-  SELECT D_NEXT_O_ID INTO var_d_next_o_id FROM district WHERE D_W_ID = var_w_id AND D_ID = var_d_id FOR UPDATE;
+  SELECT var_d_next_o_id = D_NEXT_O_ID FROM district WHERE D_W_ID = var_w_id AND D_ID = var_d_id FOR UPDATE;
 
   IF var_d_next_o_id = -1 THEN
     SELECT "Error: the district is not found";
@@ -235,14 +235,14 @@ NewOrder_Label:BEGIN
     SET var_i_id = (NonUniformRandom(8191, 7911, 1, 100000));
     SET var_ol_quantity = RandomNumber(1, 10);
 
-    SELECT I_PRICE INTO var_i_price FROM item WHERE I_ID = var_i_id;
+    SELECT  var_i_price = I_PRICE  FROM item WHERE I_ID = var_i_id;
     IF (var_ol_supply_w_id = var_w_id) THEN
       SET var_s_remote_cnt_increment = 0;
     ELSE
       SET var_s_remote_cnt_increment = 1;
     END IF;
 
-    SELECT S_QUANTITY, S_DIST_01 INTO var_s_quantity, var_s_dist_info FROM stock
+    SELECT var_s_quantity = S_QUANTITY, var_s_dist_info = S_DIST_01 FROM stock
     WHERE S_I_ID = var_i_id AND S_W_ID = var_ol_supply_w_id FOR UPDATE;
 
     SET var_s_quantity := var_s_quantity - var_ol_quantity;
@@ -288,7 +288,7 @@ Payment_Label:BEGIN
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Payment');
 
 
-  SELECT W_NAME INTO var_w_name FROM warehouse WHERE W_ID = var_w_id;
+  SELECT var_w_name = W_NAME  FROM warehouse WHERE W_ID = var_w_id;
 
   IF (var_w_name IS NULL) THEN
     SELECT "Error: w_id is not found";
@@ -297,7 +297,7 @@ Payment_Label:BEGIN
 
   UPDATE warehouse SET W_YTD = W_YTD + var_paymentAmount WHERE W_ID = var_w_id;
 
-  SELECT D_NAME INTO var_d_name FROM district
+  SELECT var_d_name = D_NAME FROM district
   WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
 
   IF (var_d_name IS NULL) THEN
@@ -308,7 +308,7 @@ Payment_Label:BEGIN
   UPDATE district SET D_YTD = D_YTD + var_paymentAmount 
   WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
 
-  SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT, C_DATA INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit, var_c_data FROM customer
+  SELECT var_c_balance = C_BALANCE, var_c_ytd_payment = C_YTD_PAYMENT, var_c_payment_cnt = C_PAYMENT_CNT, var_c_credit = C_CREDIT, var_c_data = C_DATA FROM customer
   WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;
 
   IF (var_c_payment_cnt = -1) THEN
@@ -363,7 +363,7 @@ Delivery_Label:BEGIN
   Delivery_Loop:WHILE (var_d_id < var_terminalDistrictUpperID) DO
     SET var_no_o_id := -1;
 
-    SELECT NO_O_ID INTO var_no_o_id FROM new_order 
+    SELECT var_no_o_id = NO_O_ID FROM new_order 
     WHERE NO_D_ID = var_d_id AND NO_W_ID = var_w_id 
     ORDER BY NO_O_ID ASC LIMIT 1;
 
@@ -379,10 +379,10 @@ Delivery_Label:BEGIN
       UPDATE order_line SET OL_DELIVERY_D = CURRENT_TIMESTAMP()
       WHERE OL_O_ID = var_no_o_id AND OL_D_ID = var_d_id AND OL_W_ID = var_w_id;
 
-      SELECT O_C_ID INTO var_o_c_id FROM oorder 
+      SELECT var_o_c_id = O_C_ID FROM oorder 
       WHERE O_ID = var_no_o_id AND O_D_ID = var_d_id AND O_W_ID = var_w_id;
 
-      SELECT SUM(OL_AMOUNT) INTO var_ol_total FROM order_line
+      SELECT var_ol_total = SUM(OL_AMOUNT) FROM order_line
       WHERE OL_O_ID = var_no_o_id AND OL_D_ID = var_d_id AND OL_W_ID = var_w_id;
 
       UPDATE customer 

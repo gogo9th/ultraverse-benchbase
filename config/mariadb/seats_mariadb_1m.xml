@@ -12,7 +12,7 @@
     <querycount>550000</querycount>
 
     <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
-    <scalefactor>1</scalefactor>
+    <scalefactor>10</scalefactor>
 
     <!-- The workload -->
     <terminals>1</terminals>
