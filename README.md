@@ -3,7 +3,7 @@
 
 ### MySQL 초기 설정
 
-MySQL에 유저 추가: 아이디 admin, 패스워드 123456
+MySQL에 유저 추가: 아이디 admin, 패스워드 password
 ```bash
 sudo mysql
 > CREATE USER 'admin'@'localhost' IDENTIFIED BY 'password';
