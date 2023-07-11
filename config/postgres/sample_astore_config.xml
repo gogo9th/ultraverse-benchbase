@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<parameters>
+
+    <!-- Connection details -->
+    <type>POSTGRES</type>
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql://localhost:5432/benchbase?sslmode=disable&amp;ApplicationName=tatp&amp;reWriteBatchedInserts=true</url>
+    <username>admin</username>
+    <password>password</password>
+    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <batchsize>128</batchsize>
+    <querycount>500000</querycount>
+
+    <!-- Scalefactor increases the number of subscribers -->
+    <scalefactor>1</scalefactor>
+
+    <terminals>1</terminals>
+    <works>
+        <work>
+            <time>2000000000</time>
+            <rate>500000</rate>
+            <weights>5, 1, 5, 5, 5, 10, 40, 30, 20</weights>
+        </work>
+    </works>
+
+    <!-- Twitter Procedures declaration -->
+    <transactiontypes>
+        <transactiontype>
+            <name>ProfileIdEdit</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileIdChangePassword</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileAddressAdd</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileAddressDelete</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ProfileAddressEdit</name>
+        </transactiontype>
+        <transactiontype>
+            <name>RoutesSubscribe</name>
+        </transactiontype>
+        <transactiontype>
+            <name>CheckoutDeliveryNew</name>
+        </transactiontype>
+        <transactiontype>
+            <name>CheckoutOrder</name>
+        </transactiontype>
+        <transactiontype>
+            <name>ContactUs</name>
+        </transactiontype>
+    </transactiontypes>
+</parameters>
+
+

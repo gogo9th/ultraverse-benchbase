@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+   echo "Usage: $0 <benchmark> <load|execute>"
+   exit
+fi
+
+cd target/benchbase-postgres
+if [ "$2" == "load"  ]; then
+   java -jar benchbase.jar -b $1 -c config/postgres/sample_$1_config.xml --create=true --load=true
+elif [ "$2" == "execute"  ]; then
+   java -jar benchbase.jar -b $1 -c config/postgres/sample_$1_config.xml --execute=true
+else
+   echo "Unsupported mode: $2"
+fi
+~                       

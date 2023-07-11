@@ -1,0 +1,9 @@
+#!/bin/bash
+
+./mvnw clean package -P postgres
+#./mvnw -P postgres
+
+cd target
+tar xvzf benchbase-postgres.tgz
+
+
