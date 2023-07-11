@@ -12,7 +12,7 @@
     <querycount>500000</querycount>
 
     <!-- Scalefactor increases the number of subscribers -->
-    <scalefactor>10</scalefactor>
+    <scalefactor>1</scalefactor>
 
     <!-- The workload -->
     <terminals>1</terminals>
