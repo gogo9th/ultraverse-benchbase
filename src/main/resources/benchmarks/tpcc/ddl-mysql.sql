@@ -192,9 +192,6 @@ CREATE PROCEDURE NewOrder(IN var_w_id INT,
                                    IN var_ol_supply_w_id INT
                         )
 NewOrder_Label:BEGIN
-  DECLARE var_d_id INT;
-  DECLARE var_c_id INT;
-  DECLARE var_o_ol_cnt INT;
   DECLARE var_loop_cnt INT DEFAULT 0;
 
   DECLARE var_i_id INT;
@@ -242,7 +239,7 @@ NewOrder_Label:BEGIN
       SET var_s_remote_cnt_increment = 1;
     END IF;
 
-    SELECT  S_QUANTITY INTO var_s_quantity, S_DIST_01 INTO var_s_dist_info FROM stock
+    SELECT S_QUANTITY, S_DIST_01 INTO var_s_quantity,  var_s_dist_info FROM stock
     WHERE S_I_ID = var_i_id AND S_W_ID = var_ol_supply_w_id FOR UPDATE;
 
     SET var_s_quantity := var_s_quantity - var_ol_quantity;
@@ -308,7 +305,7 @@ Payment_Label:BEGIN
   UPDATE district SET D_YTD = D_YTD + var_paymentAmount 
   WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
 
-  SELECT  C_BALANCE INTO var_c_balance,  C_YTD_PAYMENT INTO var_c_ytd_payment, C_PAYMENT_CNT INTO var_c_payment_cnt, C_CREDIT INTO var_c_credit, C_DATA INTO var_c_data FROM customer
+  SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT, C_DATA INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit, var_c_data FROM customer
   WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID AND C_ID = var_c_id;
 
   IF (var_c_payment_cnt = -1) THEN

@@ -354,7 +354,7 @@ DECLARE var_seats_left INT DEFAULT -1;
 DECLARE var_found BIGINT DEFAULT -1;
 DECLARE var_taken_seat_r_id BIGINT DEFAULT -1;
 
-SELECT  F_AL_ID INTO var_airline_id, F_SEATS_LEFT INTO var_seats_left
+SELECT  F_AL_ID, F_SEATS_LEFT INTO var_airline_id, var_seats_left
   FROM flight, airline
   WHERE F_ID = var_f_id AND F_AL_ID = AL_ID;
 
@@ -478,7 +478,7 @@ IF var_c_id IS NULL OR LENGTH(var_c_id) = 0 THEN
   LEAVE DeleteReservation_Label;
 END IF;
 
-SELECT C_IATTR00 INTO var_c_iattr00, R_ID INTO var_r_id, R_PRICE INTO var_r_price 
+SELECT C_IATTR00, R_ID, R_PRICE INTO var_r_id, var_c_iattr00, var_r_price 
   FROM customer2, flight, reservation
   WHERE C_ID = var_c_id AND C_ID = R_C_ID AND F_ID = var_f_id AND F_ID = R_F_ID;
 
