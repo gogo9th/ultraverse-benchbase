@@ -303,7 +303,7 @@ UpdateCustomer_Label:BEGIN
    DECLARE var_c_base_ap_id BIGINT DEFAULT -1; 
 
    IF var_c_id IS NULL THEN
-      SELECT  var_c_id = c_id FROM customer2 WHERE c_id_str = var_c_id_str;
+      SELECT c_id INTO var_c_id FROM customer2 WHERE c_id_str = var_c_id_str;
    END IF;
 
    IF var_c_id IS NULL THEN
@@ -311,7 +311,7 @@ UpdateCustomer_Label:BEGIN
       LEAVE UpdateCustomer_Label;      
    END IF;
 
-   SELECT var_c_base_ap_id = c_base_ap_id FROM customer2 WHERE c_id = var_c_id;
+   SELECT  c_base_ap_id INTO var_c_base_ap_id FROM customer2 WHERE c_id = var_c_id;
 
    IF var_c_base_ap_id = -1 THEN
       SELECT "c_base_ap_id is not found";
@@ -354,7 +354,7 @@ DECLARE var_seats_left INT DEFAULT -1;
 DECLARE var_found BIGINT DEFAULT -1;
 DECLARE var_taken_seat_r_id BIGINT DEFAULT -1;
 
-SELECT var_airline_id = F_AL_ID, var_seats_left = F_SEATS_LEFT 
+SELECT  F_AL_ID INTO var_airline_id, F_SEATS_LEFT INTO var_seats_left
   FROM flight, airline
   WHERE F_ID = var_f_id AND F_AL_ID = AL_ID;
 
@@ -363,7 +363,7 @@ IF var_seats_left = -1 THEN
   LEAVE NewReservation_Label;
 END IF;
 
-SELECT var_taken_seat_r_id = R_ID FROM reservation 
+SELECT  R_ID INTO var_taken_seat_r_id FROM reservation 
   WHERE R_F_ID = var_f_id AND R_SEAT = var_seatnum;
 
 IF var_taken_seat_r_id != -1 THEN
@@ -371,7 +371,7 @@ IF var_taken_seat_r_id != -1 THEN
   LEAVE NewReservation_Label;
 END IF;
 
-SELECT  var_found = R_ID FROM reservation
+SELECT  R_ID INTO var_found FROM reservation
   WHERE R_C_ID = var_c_id AND R_F_ID = var_f_id;
 
 IF var_found != -1 THEN
@@ -379,7 +379,7 @@ IF var_found != -1 THEN
   LEAVE NewReservation_Label;
 END IF;
 
-SELECT var_found = C_BASE_AP_ID 
+SELECT  C_BASE_AP_ID INTO var_found
   FROM customer2 
   WHERE C_ID = var_c_id;
 
@@ -420,14 +420,14 @@ UpdateReservation_Label:BEGIN
 
 DECLARE var_check_r_id BIGINT DEFAULT -1;
 
-SELECT  var_check_r_id = R_ID FROM reservation WHERE R_F_ID = var_f_id AND R_SEAT = var_seatnum;
+SELECT  R_ID INTO var_check_r_id FROM reservation WHERE R_F_ID = var_f_id AND R_SEAT = var_seatnum;
 
 IF var_check_r_id != -1 THEN
   SELECT "Error: The seat is already taken by another customer";
   LEAVE UpdateReservation_Label;
 END IF;
 
-SELECT  var_check_r_id = R_ID FROM reservation
+SELECT R_ID INTO var_check_r_id FROM reservation
   WHERE R_C_ID = var_c_id AND R_F_ID = var_f_id;
 
 IF var_check_r_id = -1 THEN
@@ -468,7 +468,7 @@ DECLARE var_r_id BIGINT;
 DECLARE var_r_price FLOAT;
 
 IF (var_c_id_str IS NOT NULL AND LENGTH(var_c_id_str) > 0) THEN
-  SELECT  var_c_id = C_ID FROM customer2 WHERE C_ID_STR = var_c_id_str;
+  SELECT C_ID INTO var_c_id FROM customer2 WHERE C_ID_STR = var_c_id_str;
 ELSE
   SELECT  var_c_id = C_ID, var_ff_al_id = FF_AL_ID FROM customer2, frequent_flyer WHERE FF_C_ID_STR = var_ff_c_id_str AND FF_C_ID = C_ID LIMIT 1;
 END IF;
@@ -478,7 +478,7 @@ IF var_c_id IS NULL OR LENGTH(var_c_id) = 0 THEN
   LEAVE DeleteReservation_Label;
 END IF;
 
-SELECT  var_c_iattr00 = C_IATTR00, var_r_id = R_ID, var_r_price = R_PRICE 
+SELECT C_IATTR00 INTO var_c_iattr00, R_ID INTO var_r_id, R_PRICE INTO var_r_price 
   FROM customer2, flight, reservation
   WHERE C_ID = var_c_id AND C_ID = R_C_ID AND F_ID = var_f_id AND F_ID = R_F_ID;
 

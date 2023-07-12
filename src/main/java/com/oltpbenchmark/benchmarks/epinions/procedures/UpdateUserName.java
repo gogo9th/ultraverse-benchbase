@@ -33,6 +33,7 @@ public class UpdateUserName extends Procedure {
             stmt.setString(1, name);
             stmt.setLong(2, uid);
             stmt.executeUpdate();
+System.out.println("UpdateUserName called");
         }
     }
 }
