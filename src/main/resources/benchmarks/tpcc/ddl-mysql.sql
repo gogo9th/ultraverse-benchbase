@@ -13,9 +13,7 @@ DROP TABLE IF EXISTS warehouse;
 
 DROP TABLE IF EXISTS __ULTRAVERSE_PROCEDURE_HINT;
 
-CREATE TABLE __ULTRAVERSE_PROCEDURE_HINT(
-    procname varchar(128) NOT NULL
-) ENGINE = BLACKHOLE;
+CREATE TABLE __ULTRAVERSE_PROCEDURE_HINT(callinfo VARCHAR(512) DEFAULT NULL) ENGINE = BLACKHOLE;
 
 CREATE TABLE warehouse (
     w_id       int            NOT NULL,
@@ -203,6 +201,11 @@ NewOrder_Label:BEGIN
   DECLARE var_d_next_o_id INT DEFAULT -1;
   DECLARE var_i_price DECIMAL(5, 2);
 
+    DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+        UUID_SHORT(), 'NewOrder',
+        var_w_id, var_c_id, var_d_id, var_o_ol_cnt, var_ol_supply_w_id
+    );
+
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('NewOrder');
 
   IF ((SELECT COUNT(*) FROM customer
@@ -257,6 +260,7 @@ NewOrder_Label:BEGIN
 
     SET var_loop_cnt := var_loop_cnt + 1;
   END WHILE;
+    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 END//
 DELIMITER ;
 
@@ -281,6 +285,11 @@ Payment_Label:BEGIN
   DECLARE var_c_payment_cnt INT DEFAULT -1;
   DECLARE var_c_data VARCHAR(500);
   DECLARE var_c_credit VARCHAR(2);
+
+    DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+        UUID_SHORT(), 'NewOrder',
+        var_d_id, var_customerDistrictID, var_customerWarehouseID, var_c_id, var_paymentAmount
+    );
 
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Payment');
 
@@ -333,6 +342,7 @@ Payment_Label:BEGIN
   
   INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, CURRENT_TIMESTAMP(), var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
 
+    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 END//
 DELIMITER ;
 
@@ -352,6 +362,11 @@ Delivery_Label:BEGIN
   DECLARE var_o_c_id INT;
   DECLARE var_o_carrier_id INT;
   DECLARE var_ol_total DECIMAL(8, 2);  
+
+    DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+        UUID_SHORT(), 'NewOrder',
+        var_w_id, var_terminalDistrictLowerID, var_terminalDistrictUpperID, va_o_carrier_id
+    );
 
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Delivery');
 
@@ -389,5 +404,7 @@ Delivery_Label:BEGIN
 
     SET var_d_id := var_d_id + 1;
   END WHILE;
+
+    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 END//
 DELIMITER ;
