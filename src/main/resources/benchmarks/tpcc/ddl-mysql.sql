@@ -261,7 +261,6 @@ NewOrder_Label:BEGIN
 
     SET var_loop_cnt := var_loop_cnt + 1;
   END WHILE;
-    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 END//
 DELIMITER ;
 
@@ -344,8 +343,6 @@ DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
   END IF;
   
   INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, CURRENT_TIMESTAMP(), var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
-
-    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 END//
 DELIMITER ;
 
@@ -409,7 +406,5 @@ INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo
 
     SET var_d_id := var_d_id + 1;
   END WHILE;
-
-    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 END//
 DELIMITER ;
