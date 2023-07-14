@@ -206,7 +206,7 @@ NewOrder_Label:BEGIN
         var_w_id, var_c_id, var_d_id, var_o_ol_cnt, var_ol_supply_w_id
     );
 
-  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('NewOrder');
+  --INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('NewOrder');
 
   IF ((SELECT COUNT(*) FROM customer
   WHERE C_W_ID = var_w_id AND C_D_ID = var_d_id AND C_ID = var_c_id) < 1) THEN
@@ -287,11 +287,11 @@ Payment_Label:BEGIN
   DECLARE var_c_credit VARCHAR(2);
 
     DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
-        UUID_SHORT(), 'NewOrder',
+        UUID_SHORT(), 'Payment',
         var_d_id, var_customerDistrictID, var_customerWarehouseID, var_c_id, var_paymentAmount
     );
 
-  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Payment');
+  --INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Payment');
 
 
   SELECT W_NAME INTO var_w_name FROM warehouse WHERE W_ID = var_w_id;
@@ -364,11 +364,11 @@ Delivery_Label:BEGIN
   DECLARE var_ol_total DECIMAL(8, 2);  
 
     DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
-        UUID_SHORT(), 'NewOrder',
+        UUID_SHORT(), 'Delivery',
         var_w_id, var_terminalDistrictLowerID, var_terminalDistrictUpperID, va_o_carrier_id
     );
 
-  INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Delivery');
+  --INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (procname) VALUES ('Delivery');
 
   SET var_o_carrier_id := RandomNumber(1, 10);
   
