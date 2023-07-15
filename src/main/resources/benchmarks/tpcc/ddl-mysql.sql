@@ -279,14 +279,14 @@ Payment_Label:BEGIN
 
 DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
     UUID_SHORT(), 'Payment',
-    var_d_id, var_customerDistrictID, var_customerWarehouseID, var_c_id, var_paymentAmount
+    var_w_id, var_d_id, var_customerDistrictID, var_customerWarehouseID, var_c_id, var_paymentAmount
 );
 
 
   DECLARE var_w_name VARCHAR(10) DEFAULT NULL;
   DECLARE var_d_name VARCHAR(10) DEFAULT NULL;
   DECLARE var_x INT;
-  DECLARE var_c_balance DECIMAL(12,2);     
+  DECLARE var_c_balance DECIMAL(12,2);
   DECLARE var_c_ytd_payment FLOAT;
   DECLARE var_c_payment_cnt INT DEFAULT -1;
   DECLARE var_c_data VARCHAR(500);
@@ -313,7 +313,7 @@ DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
     LEAVE Payment_Label;
   END IF;
 
-  UPDATE district SET D_YTD = D_YTD + var_paymentAmount 
+  UPDATE district SET D_YTD = D_YTD + var_paymentAmount
   WHERE D_W_ID = var_w_id AND D_ID = var_d_id;
 
   SELECT C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_CREDIT, C_DATA INTO var_c_balance, var_c_ytd_payment, var_c_payment_cnt, var_c_credit, var_c_data FROM customer
@@ -323,25 +323,25 @@ DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
     SELECT "Error: paid customer is not found";
     LEAVE Payment_Label;
   END IF;
-  
+
   SET var_c_balance := var_c_balance - var_paymentAmount;
   SET var_c_ytd_payment := var_c_ytd_payment + var_paymentAmount;
   SET var_c_payment_cnt := var_c_payment_cnt + 1;
   IF (var_c_credit = 'BC') THEN
 
-    UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment, 
-    C_PAYMENT_CNT = var_c_payment_cnt, C_DATA = var_c_data 
-    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID 
+    UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment,
+    C_PAYMENT_CNT = var_c_payment_cnt, C_DATA = var_c_data
+    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID
     AND C_ID = var_c_id;
-    
+
   ELSE
-    UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment, 
+    UPDATE customer SET C_BALANCE = var_c_balance, C_YTD_PAYMENT = var_c_ytd_payment,
     C_PAYMENT_CNT = var_c_payment_cnt
-    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID 
+    WHERE C_W_ID = var_customerWarehouseID AND C_D_ID = var_customerDistrictID
     AND C_ID = var_c_id;
-  
+
   END IF;
-  
+
   INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, CURRENT_TIMESTAMP(), var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
 END//
 DELIMITER ;
