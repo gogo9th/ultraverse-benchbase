@@ -14,6 +14,10 @@ DROP TABLE IF EXISTS airport CASCADE;
 DROP TABLE IF EXISTS airline CASCADE;
 DROP TABLE IF EXISTS country CASCADE;
 
+DROP TABLE IF EXISTS __ULTRAVERSE_PROCEDURE_HINT;
+
+CREATE TABLE __ULTRAVERSE_PROCEDURE_HINT(callinfo VARCHAR(512) DEFAULT NULL) ENGINE = BLACKHOLE;
+
 -- 
 -- CONFIG_PROFILE
 --
@@ -300,7 +304,14 @@ CREATE PROCEDURE UpdateCustomer(IN var_c_id VARCHAR(128),
                                 IN var_attr1 BIGINT)
 UpdateCustomer_Label:BEGIN
 
-   DECLARE var_c_base_ap_id BIGINT DEFAULT -1; 
+    DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+        UUID_SHORT(), 'UpdateCustomer',
+        var_c_id, var_c_id_str, var_attr0, var_attr1
+    );
+
+   DECLARE var_c_base_ap_id BIGINT DEFAULT -1;
+
+    INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 
    IF var_c_id IS NULL THEN
       SELECT c_id INTO var_c_id FROM customer2 WHERE c_id_str = var_c_id_str;
@@ -349,10 +360,19 @@ CREATE PROCEDURE NewReservation(IN var_r_id BIGINT,
                                 )
 NewReservation_Label:BEGIN
 
+DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+    UUID_SHORT(), 'NewReservation',
+    var_r_id, var_c_id, var_f_id,
+    var_seatnum, var_price,
+    var_attr0, var_attr1, var_attr2, var_attr3, var_attr4, var_attr5, var_attr6, var_attr7, var_attr8
+);
+
 DECLARE var_airline_id BIGINT;
 DECLARE var_seats_left INT DEFAULT -1;
 DECLARE var_found BIGINT DEFAULT -1;
 DECLARE var_taken_seat_r_id BIGINT DEFAULT -1;
+
+INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 
 SELECT  F_AL_ID, F_SEATS_LEFT INTO var_airline_id, var_seats_left
   FROM flight, airline
@@ -418,7 +438,16 @@ CREATE PROCEDURE UpdateReservation(IN var_r_id BIGINT,
                                    IN var_attr_val BIGINT)
 UpdateReservation_Label:BEGIN
 
+
+DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+    UUID_SHORT(), 'UpdateReservation',
+    var_r_id, var_f_id, var_c_id,
+    var_seatnum, var_attr_idx, var_attr_val
+);
+
 DECLARE var_check_r_id BIGINT DEFAULT -1;
+
+INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 
 SELECT  R_ID INTO var_check_r_id FROM reservation WHERE R_F_ID = var_f_id AND R_SEAT = var_seatnum;
 
@@ -463,9 +492,17 @@ CREATE PROCEDURE DeleteReservation(IN var_f_id VARCHAR(128),
                                    IN var_ff_al_id BIGINT)
 DeleteReservation_Label:BEGIN
 
+DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
+    UUID_SHORT(), 'DeleteReservation',
+    var_f_id, var_c_id, var_c_id_str,
+    var_ff_c_id_str, var_ff_al_id
+);
+
 DECLARE var_c_iattr00 BIGINT;
 DECLARE var_r_id BIGINT;
 DECLARE var_r_price FLOAT;
+
+INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 
 IF (var_c_id_str IS NOT NULL AND LENGTH(var_c_id_str) > 0) THEN
   SELECT C_ID INTO var_c_id FROM customer2 WHERE C_ID_STR = var_c_id_str;
