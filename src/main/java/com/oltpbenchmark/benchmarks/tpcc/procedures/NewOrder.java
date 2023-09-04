@@ -23,6 +23,7 @@ import com.oltpbenchmark.benchmarks.tpcc.TPCCConstants;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCUtil;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCWorker;
 import com.oltpbenchmark.benchmarks.tpcc.pojo.Stock;
+import com.oltpbenchmark.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.oltpbenchmark.WorkloadConfiguration;
@@ -94,7 +95,7 @@ public class NewOrder extends TPCCProcedure {
 
 
     public final SQLStmt NewOrder_Procedure = new SQLStmt(
-            "CALL NewOrder (?, ?, ?, ?, ?)");
+            "CALL NewOrder (?, ?, ?, ?, ?, ?, ?)");
 
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
 
@@ -104,11 +105,23 @@ public class NewOrder extends TPCCProcedure {
 		int d_id = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
 		int o_ol_cnt = TPCCUtil.randomNumber(5, 15, gen);
 		int ol_supply_w_id = terminalWarehouseID;
+
+        int[] i_ids = new int[o_ol_cnt];
+        int[] ol_quantities = new int[o_ol_cnt];
+
+        for (int i = 0; i < o_ol_cnt; i++) {
+            i_ids[i] = TPCCUtil.nonUniformRandom(8191, 7911, 1, 100000, gen);
+            ol_quantities[i] = TPCCUtil.randomNumber(1, 10, gen);
+        }
+
+        String i_ids_str = JSONUtil.toJSONString(i_ids);
+        String ol_quantities_str = JSONUtil.toJSONString(ol_quantities);
+
 		if (TPCCUtil.randomNumber(1, 100, gen) == 1)
 		{	while (ol_supply_w_id == terminalWarehouseID && numWarehouses != 1)
 				ol_supply_w_id = TPCCUtil.randomNumber(1, numWarehouses, gen);
 		}
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, c_id, d_id, o_ol_cnt, ol_supply_w_id)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, c_id, d_id, o_ol_cnt, ol_supply_w_id, i_ids_str, ol_quantities_str)) {
             preparedStatement.execute();
         }
 /*

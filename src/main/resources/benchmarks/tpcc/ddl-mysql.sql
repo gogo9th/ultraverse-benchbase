@@ -182,16 +182,18 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS NewOrder;
 DELIMITER //
 CREATE PROCEDURE NewOrder(IN var_w_id INT,
-                                   IN var_c_id INT,
-                                   IN var_d_id INT,
-                                   IN var_o_ol_cnt INT,
-                                   IN var_ol_supply_w_id INT
+                               IN var_c_id INT,
+                               IN var_d_id INT,
+                               IN var_o_ol_cnt INT,
+                               IN var_ol_supply_w_id INT,
+                          IN var_i_ids VARCHAR(128),
+                          IN var_ol_quantities VARCHAR(64)
                         )
 NewOrder_Label:BEGIN
 
     DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
         UUID_SHORT(), 'NewOrder',
-        var_w_id, var_c_id, var_d_id, var_o_ol_cnt, var_ol_supply_w_id
+        var_w_id, var_c_id, var_d_id, var_o_ol_cnt, var_ol_supply_w_id, var_i_ids, var_ol_quantities
     );
 
   DECLARE var_loop_cnt INT DEFAULT 0;
@@ -204,7 +206,6 @@ NewOrder_Label:BEGIN
   DECLARE var_s_remote_cnt_increment INT;
   DECLARE var_d_next_o_id INT DEFAULT -1;
   DECLARE var_i_price DECIMAL(5, 2);
-
 
 
   INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
@@ -233,8 +234,20 @@ NewOrder_Label:BEGIN
   INSERT INTO new_order (NO_O_ID, NO_D_ID, NO_W_ID) VALUES (var_d_next_o_id, var_d_id, var_w_id);
 
   Order_Loop:WHILE (var_loop_cnt < var_o_ol_cnt) DO
-    SET var_i_id = (NonUniformRandom(8191, 7911, 1, 100000));
-    SET var_ol_quantity = RandomNumber(1, 10);
+    SET var_i_id = (
+      SELECT JSON_EXTRACT(
+        var_i_ids,
+        CONCAT('$[', var_loop_cnt, ']')
+      )
+    );
+
+    /* (NonUniformRandom(8191, 7911, 1, 100000)); */
+    SET var_ol_quantity = (
+      SELECT JSON_EXTRACT(
+        var_ol_quantities,
+        CONCAT('$[', var_loop_cnt, ']')
+      )
+    );
 
     SELECT  I_PRICE INTO var_i_price  FROM item WHERE I_ID = var_i_id;
     IF (var_ol_supply_w_id = var_w_id) THEN
@@ -353,13 +366,13 @@ DELIMITER //
 CREATE PROCEDURE Delivery(IN var_w_id INT,
                          IN var_terminalDistrictLowerID INT,
                          IN var_terminalDistrictUpperID INT,
-                         IN va_o_carrier_id INT
+                         IN var_o_carrier_id INT
                         )
 Delivery_Label:BEGIN
 
 DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
     UUID_SHORT(), 'Delivery',
-    var_w_id, var_terminalDistrictLowerID, var_terminalDistrictUpperID, va_o_carrier_id
+    var_w_id, var_terminalDistrictLowerID, var_terminalDistrictUpperID, var_o_carrier_id
 );
 
 
@@ -372,8 +385,6 @@ DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
 
 INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo);
 
-  SET var_o_carrier_id := RandomNumber(1, 10);
-  
   Delivery_Loop:WHILE (var_d_id < var_terminalDistrictUpperID) DO
     SET var_no_o_id := -1;
 
