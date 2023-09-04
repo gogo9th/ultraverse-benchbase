@@ -23,11 +23,15 @@ import com.oltpbenchmark.benchmarks.tpcc.TPCCConstants;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCUtil;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCWorker;
 import com.oltpbenchmark.benchmarks.tpcc.pojo.Stock;
+import com.oltpbenchmark.util.CollectionUtil;
 import com.oltpbenchmark.util.JSONUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.oltpbenchmark.WorkloadConfiguration;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class NewOrder extends TPCCProcedure {
@@ -106,16 +110,16 @@ public class NewOrder extends TPCCProcedure {
 		int o_ol_cnt = TPCCUtil.randomNumber(5, 15, gen);
 		int ol_supply_w_id = terminalWarehouseID;
 
-        int[] i_ids = new int[o_ol_cnt];
-        int[] ol_quantities = new int[o_ol_cnt];
+        Integer[] i_ids = new Integer[o_ol_cnt];
+        Integer[] ol_quantities = new Integer[o_ol_cnt];
 
         for (int i = 0; i < o_ol_cnt; i++) {
             i_ids[i] = TPCCUtil.nonUniformRandom(8191, 7911, 1, 100000, gen);
             ol_quantities[i] = TPCCUtil.randomNumber(1, 10, gen);
         }
 
-        String i_ids_str = JSONUtil.toJSONString(i_ids);
-        String ol_quantities_str = JSONUtil.toJSONString(ol_quantities);
+        String i_ids_str = JSONUtil.toJSONString(Arrays.asList(i_ids));
+        String ol_quantities_str = JSONUtil.toJSONString(Arrays.asList(ol_quantities));
 
 		if (TPCCUtil.randomNumber(1, 100, gen) == 1)
 		{	while (ol_supply_w_id == terminalWarehouseID && numWarehouses != 1)
