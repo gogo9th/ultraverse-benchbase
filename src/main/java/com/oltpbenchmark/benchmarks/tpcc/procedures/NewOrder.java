@@ -99,7 +99,7 @@ public class NewOrder extends TPCCProcedure {
 
 
     public final SQLStmt NewOrder_Procedure = new SQLStmt(
-            "CALL NewOrder (?, ?, ?, ?, ?, ?, ?)");
+            "CALL NewOrder (?, ?, ?, ?, ?, ?, ?, ?)");
 
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
 
@@ -125,7 +125,10 @@ public class NewOrder extends TPCCProcedure {
 		{	while (ol_supply_w_id == terminalWarehouseID && numWarehouses != 1)
 				ol_supply_w_id = TPCCUtil.randomNumber(1, numWarehouses, gen);
 		}
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, c_id, d_id, o_ol_cnt, ol_supply_w_id, i_ids_str, ol_quantities_str)) {
+
+        String timestamp = TPCCUtil.getCurrentTime();
+
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, NewOrder_Procedure, terminalWarehouseID, c_id, d_id, o_ol_cnt, ol_supply_w_id, i_ids_str, ol_quantities_str, timestamp)) {
             preparedStatement.execute();
         }
 /*

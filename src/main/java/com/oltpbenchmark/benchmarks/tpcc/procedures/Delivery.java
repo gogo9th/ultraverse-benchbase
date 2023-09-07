@@ -84,7 +84,7 @@ public class Delivery extends TPCCProcedure {
 
 
     public final SQLStmt Delivery_Procedure = new SQLStmt(
-            "CALL Delivery(?, ?, ?, ?)");
+            "CALL Delivery(?, ?, ?, ?, ?)");
 
 
     public void run(Connection conn, Random gen, int w_id, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker w, WorkloadConfiguration configuration) throws SQLException {
@@ -102,8 +102,10 @@ public class Delivery extends TPCCProcedure {
 		//		ol_supply_w_id = TPCCUtil.randomNumber(1, numWarehouses, gen);
 		//}
 		int o_carrier_id = TPCCUtil.randomNumber(1, 10, gen);
+        String timestamp = TPCCUtil.getCurrentTime();
+
 //System.out.println("CALL Delivery(" + w_id + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ")");
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Delivery_Procedure, w_id, terminalDistrictLowerID, terminalDistrictUpperID, o_carrier_id)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Delivery_Procedure, w_id, terminalDistrictLowerID, terminalDistrictUpperID, o_carrier_id, timestamp)) {
             preparedStatement.execute();
         }
 

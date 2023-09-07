@@ -187,13 +187,14 @@ CREATE PROCEDURE NewOrder(IN var_w_id INT,
                                IN var_o_ol_cnt INT,
                                IN var_ol_supply_w_id INT,
                           IN var_i_ids VARCHAR(128),
-                          IN var_ol_quantities VARCHAR(64)
+                          IN var_ol_quantities VARCHAR(64),
+                          IN var_timestamp DATETIME
                         )
 NewOrder_Label:BEGIN
 
     DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
         UUID_SHORT(), 'NewOrder',
-        var_w_id, var_c_id, var_d_id, var_o_ol_cnt, var_ol_supply_w_id, var_i_ids, var_ol_quantities
+        var_w_id, var_c_id, var_d_id, var_o_ol_cnt, var_ol_supply_w_id, var_i_ids, var_ol_quantities, var_timestamp
     );
 
   DECLARE var_loop_cnt INT DEFAULT 0;
@@ -229,7 +230,7 @@ NewOrder_Label:BEGIN
   UPDATE district SET D_NEXT_O_ID = D_NEXT_O_ID + 1 WHERE D_W_ID = var_w_id AND d_id = var_d_id;
 
   INSERT INTO oorder (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_OL_CNT, O_ALL_LOCAL)
-  VALUES (var_d_next_o_id, var_d_id, var_w_id, var_c_id, CURRENT_TIMESTAMP(), var_loop_cnt, var_o_all_local);
+  VALUES (var_d_next_o_id, var_d_id, var_w_id, var_c_id, var_timestamp, var_loop_cnt, var_o_all_local);
 
   INSERT INTO new_order (NO_O_ID, NO_D_ID, NO_W_ID) VALUES (var_d_next_o_id, var_d_id, var_w_id);
 
@@ -286,13 +287,14 @@ CREATE PROCEDURE Payment(IN var_w_id INT,
                                    IN var_customerDistrictID INT,
                                    IN var_customerWarehouseID INT,
                                    IN var_c_id INT,
-                                   IN var_paymentAmount DECIMAL(6,2)
+                                   IN var_paymentAmount DECIMAL(6,2),
+                                   IN var_timestamp DATETIME
                          )
 Payment_Label:BEGIN
 
 DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
     UUID_SHORT(), 'Payment',
-    var_w_id, var_d_id, var_customerDistrictID, var_customerWarehouseID, var_c_id, var_paymentAmount
+    var_w_id, var_d_id, var_customerDistrictID, var_customerWarehouseID, var_c_id, var_paymentAmount, var_timestamp
 );
 
 
@@ -355,7 +357,7 @@ DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
 
   END IF;
 
-  INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, CURRENT_TIMESTAMP(), var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
+  INSERT INTO history (H_C_D_ID, H_C_W_ID, H_C_ID, H_D_ID, H_W_ID, H_DATE, H_AMOUNT, H_DATA) VALUES (var_customerDistrictID, var_customerWarehouseID, var_c_id, var_d_id, var_w_id, var_timestamp, var_paymentAmount, CONCAT(var_w_name, '  ', var_d_name));
 END//
 DELIMITER ;
 
@@ -366,13 +368,14 @@ DELIMITER //
 CREATE PROCEDURE Delivery(IN var_w_id INT,
                          IN var_terminalDistrictLowerID INT,
                          IN var_terminalDistrictUpperID INT,
-                         IN var_o_carrier_id INT
+                         IN var_o_carrier_id INT,
+                         IN var_timestamp DATETIME
                         )
 Delivery_Label:BEGIN
 
 DECLARE __ultraverse_callinfo VARCHAR(512) DEFAULT JSON_ARRAY(
     UUID_SHORT(), 'Delivery',
-    var_w_id, var_terminalDistrictLowerID, var_terminalDistrictUpperID, var_o_carrier_id
+    var_w_id, var_terminalDistrictLowerID, var_terminalDistrictUpperID, var_o_carrier_id, var_timestamp
 );
 
 
@@ -401,7 +404,7 @@ INSERT INTO __ULTRAVERSE_PROCEDURE_HINT (callinfo) VALUES (__ultraverse_callinfo
       UPDATE oorder SET O_CARRIER_ID = var_o_carrier_id 
       WHERE O_ID = var_no_o_id AND O_D_ID = var_d_id AND O_W_ID = var_w_id;
     
-      UPDATE order_line SET OL_DELIVERY_D = CURRENT_TIMESTAMP()
+      UPDATE order_line SET OL_DELIVERY_D = var_timestamp
       WHERE OL_O_ID = var_no_o_id AND OL_D_ID = var_d_id AND OL_W_ID = var_w_id;
 
       SELECT  O_C_ID INTO var_o_c_id FROM oorder 

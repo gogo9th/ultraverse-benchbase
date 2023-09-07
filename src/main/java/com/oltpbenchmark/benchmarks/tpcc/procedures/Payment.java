@@ -112,7 +112,7 @@ public class Payment extends TPCCProcedure {
 
 
     public final SQLStmt Payment_Procedure = new SQLStmt(
-            "CALL Payment (?, ?, ?, ?, ?, ?)");
+            "CALL Payment (?, ?, ?, ?, ?, ?, ?)");
 
 
     public void run(Connection conn, Random gen, int w_id, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, TPCCWorker worker, WorkloadConfiguration configuration) throws SQLException {
@@ -141,8 +141,10 @@ public class Payment extends TPCCProcedure {
 				customerWarehouseID = TPCCUtil.randomNumber(1, numWarehouses, gen);
 		}
 
+        String timestamp = TPCCUtil.getCurrentTime();
+
 //System.out.println("CALL Payment(" + w_id + ", " + numWarehouses + ", " + terminalDistrictLowerID + ", " + terminalDistrictUpperID + ", " + TPCCConfig.configDistPerWhse + ", " + TPCCConfig.configCustPerDist + ")"); 
-        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Payment_Procedure, w_id, d_id, customerDistrictID, customerWarehouseID, c_id, paymentAmount)) {
+        try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, Payment_Procedure, w_id, d_id, customerDistrictID, customerWarehouseID, c_id, paymentAmount, timestamp)) {
             preparedStatement.execute();
         }
 
