@@ -176,6 +176,7 @@ CREATE PROCEDURE CheckoutOrder(
                 TRUNCATE table_0; 
 
                 INSERT INTO Orders
+                (OrderID, UserID, AddressID, SubTotal, Discount, ShippingFee, Total, OrderDate, Status)
                     VALUES(null, req_user_UserID, req_session_address_AddressID,
                     req_session_cartSummary_subTotal, req_session_cartSummary_discount,
                     req_session_cartSummary_shipCost, req_session_cartSummary_total, 
@@ -190,7 +191,9 @@ CREATE PROCEDURE CheckoutOrder(
                     IF (var_2 > 0) THEN
                         SET var_1 := JSON_EXTRACT(var_0, "$.ProductID");
                         SET var_3 := JSON_EXTRACT(var_0, "$.productTotal");
-                        INSERT INTO \`Order Details\` 
+                        INSERT INTO \`Order Details\`
+                        (OrderID, ProductID, Quantity, Total)
+
                             VALUES(var_inserted_id_0, var_1, var_2, var_3);
                         UPDATE Products SET UnitsInStock = (UnitsInStock - var_2) 
                             WHERE ProductID = var_1;
@@ -198,7 +201,7 @@ CREATE PROCEDURE CheckoutOrder(
                     END IF;
                 END WHILE;
 
-                INSERT INTO table_0  
+                INSERT INTO table_0
                     SELECT * FROM Orders WHERE OrderID = var_inserted_id_0;
 
                 SELECT * FROM Addresses WHERE AddressID = (SELECT AddressID FROM table_0 LIMIT 1);

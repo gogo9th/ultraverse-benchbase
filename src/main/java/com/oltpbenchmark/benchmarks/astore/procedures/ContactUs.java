@@ -43,7 +43,7 @@ public class ContactUs extends Procedure {
     );
 */
     public final SQLStmt my_query = new SQLStmt(
-            "INSERT INTO Messages VALUES(null, ?, ?, ?, ?)"
+            "INSERT INTO Messages (MessageID, FullName, Email, Subject, Content) VALUES(null, ?, ?, ?, ?)"
     );
 
     public long run(Connection conn, String req_body_fullName, String req_body_email, String req_body_subject, String req_body_contactMessage) throws SQLException {

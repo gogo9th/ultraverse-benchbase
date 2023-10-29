@@ -43,7 +43,7 @@ public class RoutesSubscribe extends Procedure {
     );
 */
     public final SQLStmt my_query = new SQLStmt(
-            "INSERT INTO Subscribers VALUES (?)"
+            "INSERT INTO Subscribers (Email) VALUES (?)"
     );
 
     public long run(Connection conn, String req_body_email) throws SQLException {

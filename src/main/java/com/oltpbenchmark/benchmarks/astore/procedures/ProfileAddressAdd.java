@@ -42,7 +42,7 @@ public class ProfileAddressAdd extends Procedure {
     );*/
 
     public final SQLStmt my_query = new SQLStmt(
-            "INSERT INTO Addresses VALUES (null, ?, ?, ?, ?, ?, ?, ?)" 
+            "INSERT INTO Addresses  (AddressID, UserID, FullName, StreetAddress, PostCode, City, Country, Phone) VALUES (null, ?, ?, ?, ?, ?, ?, ?)"
     );
 
     public long run(Connection conn, String req_body_password, String req_user_Password, String req_body_fullName, String req_body_streetAddress, String req_body_postcode, String req_body_city, String req_body_country, String req_body_phone, Integer req_user_userID) throws SQLException {
