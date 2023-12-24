@@ -36,7 +36,7 @@ public class UpdateTrustRating extends Procedure {
             stmt.setLong(2, source_uid);
             stmt.setLong(3, target_uid);
             stmt.executeUpdate();
-System.out.println("UpdateTrustRating called");
+//System.out.println("UpdateTrustRating called");
         }
     }
 }

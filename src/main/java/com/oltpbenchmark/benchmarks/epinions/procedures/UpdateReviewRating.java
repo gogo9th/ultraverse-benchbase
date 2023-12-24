@@ -36,7 +36,7 @@ public class UpdateReviewRating extends Procedure {
             stmt.setLong(2, iid);
             stmt.setLong(3, uid);
             stmt.executeUpdate();
-System.out.println("UpdateReviewRating called");
+//System.out.println("UpdateReviewRating called");
         }
     }
 }

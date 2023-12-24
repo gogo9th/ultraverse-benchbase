@@ -35,7 +35,7 @@ public class UpdateItemTitle extends Procedure {
             stmt.setString(1, title);
             stmt.setLong(2, iid);
             stmt.executeUpdate();
-System.out.println("UpdateItemTitle called");
+//System.out.println("UpdateItemTitle called");
         }
     }
 }
