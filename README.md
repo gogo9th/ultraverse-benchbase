@@ -1,9 +1,9 @@
 ## BenchBase
 
 
-### MySQL 초기 설정
+### MySQL Initial setup
 
-MySQL에 유저 추가: 아이디 admin, 패스워드 password
+Add a user to MySQL: ID admin, PASSWORD password
 ```bash
 sudo mysql
 > CREATE USER 'admin'@'localhost' IDENTIFIED BY 'password';
@@ -11,36 +11,36 @@ sudo mysql
 ```
 
 
-### BenchBase 설치
+### BenchBase Installation
 
-- 참고: https://github.com/cmu-db/benchbase (오직 참고용. 실제 설치는 우리가 일부 변경한 이 Github 코드를 설치해야 함.)
+- Reference: https://github.com/cmu-db/benchbase (The actual installation should be this repository's modified one)
 
 ```bash
 $ sudo apt install openjdk-17-jdk maven  # must install Java v17 or higher
 $ cd ultraverse-benchbase
-$ ./make-mariadb # 컴파일. Java 소스코드를 수정할 때마다 실행해주어야 함.
+$ ./make-mariadb # compilation. Must run it whenever editting the Java source code
 
-## BenchBase 실행
+## BenchBase Execution
 
-  # 사용법: ./forward-play-mariadb.sh <epinions|resourcestresser|tatp|seats|tpcc> <1m|10m|100m|1b> (execute)
+  # Usage: ./forward-play-mariadb.sh <epinions|resourcestresser|tatp|seats|tpcc> <1m|10m|100m|1b> (execute)
 
-  # epinions 테이블들을 초기화 후 1 million 트랜젝션 쿼리들을 실행
+  # epinions tables are initialized and 1 million transactions get executed
 $ ./forward-play-mariadb.sh epinions 1m 
 
-  # 기존 생성한 epinions 초기 테이블들을 사용하여 1 million 트랜젝션 쿼리들을 실행
+  # Run 1 milllion transaction queries by using the previously generated and initialized epinions tables
 $ ./forward-play-mariadb.sh epinions 1m execute 
 
-  # 기존 생성한 epinions 초기 테이블들을 사용하여 10 million 트랜젝션 쿼리들을 실행
+  # Run 10 milllion transaction queries by using the previously generated and initialized epinions tables
 $ ./forward-play-mariadb.sh epinions 10m execute 
 
-  # 기존 생성한 epinions 초기 테이블들을 사용하여 100 million 트랜젝션 쿼리들을 실행
+  # Run 100 milllion transaction queries by using the previously generated and initialized epinions tables
 $ ./forward-play-mariadb.sh epinions 100m execute 
 
-  # 기존 생성한 epinions 초기 테이블들을 사용하여 1 billion 트랜젝션 쿼리들을 실행
+  # Run 1 billion transaction queries by using the previously generated and initialized epinions tables
 $ ./forward-play-mariadb.sh epinions 1b execute 
 
-   # 생성된 초기 테이블들은 각각 <테이블명>_initial 테이블에 저장되며,   
-  # execute할 때마다 각 <테이블명>_iniital을 <테이블명>으로 clone한 후 execute 실행
+   # The generated tables get stored in the tables named <TABLE NAME>_initial,   
+  # and whenever executed, each <TABLE NAME>_iniital get cloned to <TABLE NAME> and executes
 ```
 
-실행이 완료되면  `/var/log/mysql/mylog` 파일 안에 general 로그 파일이 생성됨.
+Once the execution is done, the general log file gets stored in the `/var/log/mysql/mylog` file
